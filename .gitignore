@@ -1,0 +1,9 @@
+lsof
+*.o
+tests/config.*
+*.a
+TAGS
+tags
+Makefile
+*.patch
+*~
