@@ -169,9 +169,9 @@ alloc_lfile(nm, num)
 	Lf->mnt_stat = (unsigned char)0;
 #endif	/* defined(HASMNTSTAT) */
 
-#if	defined(HASPIPEOPTS)
+#if	defined(HASEPTOPTS)
 	Lf->pipend = 0;
-#endif	/* defined(HASPIPEOPTS) */
+#endif	/* defined(HASEPTOPTS) */
 
 #if	defined(HASSOOPT)
 	Lf->lts.kai = Lf->lts.ltm = 0;
@@ -307,9 +307,9 @@ alloc_lproc(pid, pgid, ppid, uid, cmd, pss, sf)
 	Lp = &Lproc[Nlproc++];
 	Lp->pid = pid;
 
-#if	defined(HASPIPEOPTS)
+#if	defined(HASEPTOPTS)
 	Lp->pipe = 0;
-#endif	/* defined(HASPIPEOPTS) */
+#endif	/* defined(HASEPTOPTS) */
 
 #if	defined(HASTASKS)
 	Lp->tid = 0;
@@ -891,9 +891,9 @@ link_lfile()
 	if (Lf->sf & SELEXCLF)
 	    return;
 
-#if	defined(HASPIPEOPTS)
+#if	defined(HASEPTOPTS)
 /*
- * If pipe info has been requested, clear the SELPINFO flag from the local
+ * If endpoint info has been requested, clear the SELPINFO flag from the local
  * file structure, since it was set only to insure this file would be linked.
  * While this might leave no file selection flags set, a later call to the
  * process_pinfo() function might set some. Also set the PS_PIPE flag for
@@ -905,7 +905,7 @@ link_lfile()
 	    Lf->sf &= ~SELPINFO;
 	    Lp->pipe |= PS_PIPE;
 	}
-#endif	/* defined(HASPIPEOPTS) */
+#endif	/* defined(HASEPTOPTS) */
 
 	Lp->pss |= PS_SEC;
 	if (Plf)
@@ -923,7 +923,7 @@ link_lfile()
 }
 
 
-#if	defined(HASPIPEOPTS)
+#if	defined(HASEPTOPTS)
 /*
  * process_pinfo() -- process pipe info, adding it to selected files and
  *		      selecting pipe end files (if requested)
@@ -933,7 +933,7 @@ void
 process_pinfo(f)
 	int f;				/* function:
 					 *     0 == process selected pipe
-					 *     1 == process pipe end point
+					 *     1 == process end point
 					 */
 {
 	struct lproc *ep;		/* pipe endpoint process */
@@ -996,8 +996,8 @@ process_pinfo(f)
 		if (!is_file_sel(Lp, Lf) && Lf->pipend) {
 
 		/*
-		 * This is an unselected end point pipe file.  Select it and
-		 * add its end point information to its name column addition.
+		 * This is an unselected end point file.  Select it and add
+		 * its end point information to its name column addition.
 		 */
 		    Lf->sf = Selflags;
 		    Lp->pss |= PS_SEC;
@@ -1021,7 +1021,7 @@ process_pinfo(f)
 	    }
 	}
 }
-#endif	/* defined(HASPIPEOPTS) */
+#endif	/* defined(HASEPTOPTS) */
 
 
 #if	defined(HASFSTRUCT)

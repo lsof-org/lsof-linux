@@ -778,6 +778,9 @@ possibilities
     HASEOPT		indicates the dialect supports the -e option to
 			eliminate kernel blocks on a named file system.
 
+    HASEPTOPTS		indicates the dialect supports the +|-E end point
+			options.
+
     HASEXT2FS           is defined for BSD dialects for which ext2fs
 			file system support can be provided.  A value
 			of 1 indicates that the i_e2din member does not
@@ -1065,8 +1068,6 @@ possibilities
 			dialect source for an example.
 
     HASPIPENODE		enables/disables readpipenode() in node.c.
-
-    HASPIPEOPTS		indicates the dialect supports the +|-E pipe options.
 
     HASPMAPENABLED      enables the automatic reporting of portmapper
 			registration information for TCP and UDP

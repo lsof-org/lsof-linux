@@ -78,18 +78,18 @@ struct llock **LckH = (struct llock **)NULL; /* PID-hashed locks */
 
 _PROTOTYPE(static void check_lock,(void));
 
-#if	defined(HASPIPEOPTS)
+#if	defined(HASEPTOPTS)
 _PROTOTYPE(static void enter_pinfo,(void));
-#endif	/* defined(HASPIPEOPTS) */
+#endif	/* defined(HASEPTOPTS) */
 
 
 /*
  * Locals storage
  */
 
-#if	defined(HASPIPEOPTS)
+#if	defined(HASEPTOPTS)
 static pinfo_t **Pinfo = (pinfo_t **)NULL;
-#endif	/* defined(HASPIPEOPTS) */
+#endif	/* defined(HASEPTOPTS) */
 
 
 /*
@@ -115,7 +115,7 @@ check_lock()
 }
 
 
-#if	defined(HASPIPEOPTS)
+#if	defined(HASEPTOPTS)
 /*
  * clear_pinfo() -- clear allocated pipe info
  */
@@ -233,7 +233,7 @@ find_pendinfo(lf, pp)
 	return((pinfo_t *)NULL);
 
 }
-#endif	/* defined(HASPIPEOPTS) */
+#endif	/* defined(HASEPTOPTS) */
 
 
 
@@ -579,12 +579,12 @@ process_proc_node(p, pbr, s, ss, l, ls)
 	    Lf->inode = (INODETYPE)s->st_ino;
 	    Lf->inp_ty = 1;
 
-#if	defined(HASPIPEOPTS)
+#if	defined(HASEPTOPTS)
 	    if (Lf->ntype == N_FIFO) {
 	    	(void) enter_pinfo();
 		Lf->sf |= SELPINFO;
 	    }
-#endif	/* defined(HASPIPEOPTS) */
+#endif	/* defined(HASEPTOPTS) */
 
 	}
 /*

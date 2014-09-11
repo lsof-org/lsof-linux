@@ -485,9 +485,9 @@ Maintenance Procedures                                    LSOF(8)
               information  might be made available via the +|-m m
               option.)
 
-     +|-E     +E  specifies  that  Linux  pipe  files  should  be
-              displayed  with  endpoint  information and the pipe
-              files of the endpoints should also be displayed.
+     +|-E     +E specifies that Linux files should  be  displayed
+              with endpoint information and the files of the end-
+              points should also be displayed.
 
               Endpoint  information  is  displayed  in  the  NAME
               column  in the form ``PID,cmd,FDmode''.  PID is the

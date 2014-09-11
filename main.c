@@ -177,11 +177,11 @@ main(argc, argv)
 	    "",
 #endif	/* defined(HASEOPT) */
 
-#if	defined(HASPIPEOPTS)
+#if	defined(HASEPTOPTS)
 	    "E",
-#else	/* !defined(HASPIPEOPTS) */
+#else	/* !defined(HASEPTOPTS) */
 	    "",
-#endif	/* defined(HASPIPEOPTS) */
+#endif	/* defined(HASEPTOPTS) */
 
 #if	defined(HASKOPT)
 	    "k:",
@@ -363,11 +363,11 @@ main(argc, argv)
 		break;
 #endif	/* defined(HASEOPT) */
 
-#if	defined(HASPIPEOPTS)
+#if	defined(HASEPTOPTS)
 	    case 'E':
 		FpipeE = (GOp == '+') ? 2 : 1;
 		break;
-#endif	/* defined(HASPIPEOPTS) */
+#endif	/* defined(HASEPTOPTS) */
 
 	    case 'f':
 		if (!GOv || *GOv == '-' || *GOv == '+') {
@@ -1291,9 +1291,9 @@ main(argc, argv)
 		NcacheReload = 1;
 #endif	/* defined(HASNCACHE) */
 
-#if	defined(HASPIPEOPTS)
+#if	defined(HASEPTOPTS)
 	    /*
-	     * If pipe info has been requested, make sure it is coded for
+	     * If endpoint info has been requested, make sure it is coded for
 	     * printing.
 	     *
 	     * Lf contents must be preserved, since they may point to a
@@ -1312,7 +1312,7 @@ main(argc, argv)
 			    (void) process_pinfo(0);
 		    }
 		/*
-		 * In a second pass, process unselected pipe end point files,
+		 * In a second pass, process unselected endpoint files,
 		 * possibly selecting them for printing.
 		 */
 		    for (i = 0; i < Nlproc; i++) {
@@ -1322,7 +1322,7 @@ main(argc, argv)
 		    }
 		    Lf = lf;
 		}
-#endif	/* defined(HASPIPEOPTS) */
+#endif	/* defined(HASEPTOPTS) */
 
 	    /*
 	     * Print the selected processes and count them.
@@ -1351,9 +1351,9 @@ main(argc, argv)
 	 */
 	    if (RptTm) {
 
-#if	defined(HASPIPEOPTS)
+#if	defined(HASEPTOPTS)
 		(void) clear_pinfo();
-#endif	/* defined(HASPIPEOPTS) */
+#endif	/* defined(HASEPTOPTS) */
 
 		if (rc) {
 		    if (!n)

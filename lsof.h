@@ -456,10 +456,10 @@ extern int ZoneColW;
 #define	PS_SEC		2		/* secondary process selection -- e.g.,
 					 * by directory or file */
 
-# if	defined(HASPIPEOPTS)
+# if	defined(HASEPTOPTS)
 #define	PS_PIPE		1		/* process has a pipe file */
 #define	PS_PIPE_END	2		/* process has a pipe end point file */
-# endif	/* defined(HASPIPEOPTS) */
+# endif	/* defined(HASEPTOPTS) */
 
 #define	SELCMD		0x0001		/* select process by command name */
 #define	SELCNTX		0x0002		/* select security context (-Z) */
@@ -553,14 +553,14 @@ struct pff_tab {			/* print file flags table structure */
 };
 # endif	/* defined(HASFSTRUCT) */
 
-# if	defined(HASPIPEOPTS)
+# if	defined(HASEPTOPTS)
 typedef struct pinfo {			/* hashed pipe inode numbers */
 	INODETYPE ino;			/* pipe's inode */
 	struct lfile *lf;		/* connected pipe file */
 	int lpx;			/* connected process index */
 	struct pinfo *next;		/* next entry for hashed inode */
 } pinfo_t;
-# endif	/* defined(HASPIPEOPTS) */
+# endif	/* defined(HASEPTOPTS) */
 
 
 struct seluid {
@@ -724,9 +724,9 @@ struct lfile {
 	unsigned char nlink_def;	/* link count definition status */
 	unsigned char off_def;		/* offset definition status */
 
-# if	defined(HASPIPEOPTS)
+# if	defined(HASEPTOPTS)
 	unsigned char pipend;		/* pipe endpoint file */
-# endif	/* defined(HASPIPEOPTS) */
+# endif	/* defined(HASEPTOPTS) */
 
 	unsigned char rdev_def;		/* rdev definition status */
 	unsigned char sz_def;		/* size definition status */
@@ -863,9 +863,9 @@ struct lproc {
 	short pss;			/* state: 0 = not selected
 				 	 *	  1 = wholly selected
 				 	 *	  2 = partially selected */
-# if	defined(HASPIPEOPTS)
+# if	defined(HASEPTOPTS)
 	short pipe;			/* pipe status -- PS_PIPE* values */
-# endif	/* defined(HASPIPEOPTS) */
+# endif	/* defined(HASEPTOPTS) */
 
 	int pid;			/* process ID */
 

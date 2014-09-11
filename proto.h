@@ -110,11 +110,11 @@ _PROTOTYPE(extern int examine_lproc,(void));
 _PROTOTYPE(extern void Exit,(int xv)) exiting;
 _PROTOTYPE(extern void find_ch_ino,(void));
 
-# if	defined(HASPIPEOPTS)
+# if	defined(HASEPTOPTS)
 _PROTOTYPE(extern void clear_pinfo,(void));
 _PROTOTYPE(extern pinfo_t *find_pendinfo,(struct lfile *lf, pinfo_t *pp));
 _PROTOTYPE(extern void process_pinfo,(int f));
-# endif	/* defined(HASPIPEOPTS) */
+# endif	/* defined(HASEPTOPTS) */
 
 _PROTOTYPE(extern void free_lproc,(struct lproc *lp));
 _PROTOTYPE(extern void gather_proc_info,(void));

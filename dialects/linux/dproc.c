@@ -839,12 +839,12 @@ process_id(idp, idpl, cmd, uid, pid, ppid, pgid, tid)
 	||  is_cmd_excl(cmd, &pss, &sf))
 	{
 
-#if	defined(HASPIPEOPTS)
+#if	defined(HASEPTOPTS)
 	    if (!FpipeE)
 		return(1);
-#else	/* !defined(HASPIPEOPTS) */
+#else	/* !defined(HASEPTOPTS) */
 	    return(1);
-#endif	/* defined(HASPIPEOPTS) */
+#endif	/* defined(HASEPTOPTS) */
 
 	}
 	if (Cckreg && !FpipeE) {

@@ -4722,10 +4722,10 @@ Supplement	Regenerated the 4.04 distribution to correct a non-
 		Since a test system is no longer available, dropped the
 		claim of FreeBSD 4.9 support.
 
-		Added the -e and -E options for Linux.  -e displays pipe end
-		information; -E displays pipe end information and pipe end
-		files.  Masatake YAMATO <yamato@redhat.com> requested this
-		support and suggested code to implement it.
+		Added the +|-E options for Linux.  -E displays endpoint info;
+		+E displays endpoint info and endpopint files.  Masatake YAMATO
+		<yamato@redhat.com> requested this support and suggested code
+		to implement it.
 
 		Fixed a Linux bug handling processes whose command includes a
 		non-printing character, particularly a NEWLINE character, and

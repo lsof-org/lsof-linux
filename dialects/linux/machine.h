@@ -318,10 +318,10 @@
 
 
 /*
- * HASPIPEOPTS is defined for dialects that support the -e and -E options.
+ * HASEPTOPTS is defined for dialects that support the +|-E options.
  */
 
-#define		HASPIPEOPTS	1
+#define		HASEPTOPTS	1
 
 
 /*

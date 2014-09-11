@@ -393,11 +393,11 @@ usage(xv, fh, version)
 		"",
 #endif	/* defined(HASDCACHE) */
 
-#if	defined(HASPIPEOPTS)
+#if	defined(HASEPTOPTS)
 		" [+|-E]"
-#else	/* !defined(HASPIPEOPTS) */
+#else	/* !defined(HASEPTOPTS) */
 		""
-#endif	/* defined(HASPIPEOPTS) */
+#endif	/* defined(HASEPTOPTS) */
 
 		);
 
@@ -607,12 +607,12 @@ usage(xv, fh, version)
 	    if (col != 1)
 		(void) fprintf(stderr, "\n");
 
-#if	defined(HASPIPEOPTS)
+#if	defined(HASEPTOPTS)
 	    (void) fprintf(stderr, "  %-36.36s  %s\n",
-		"-E display pipe end info",
-		"+E display pipe end info and files"
+		"-E display endpoint info",
+		"+E display endpoint info and files"
 	    );
-#endif	/* defined(HASPIPEOPTS) */
+#endif	/* defined(HASEPTOPTS) */
 
 	    (void) fprintf(stderr, "  %-36.36s",
 		"+f|-f  +filesystem or -file names");
