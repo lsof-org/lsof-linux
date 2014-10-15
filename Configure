@@ -14,7 +14,7 @@
 # shell script, named $LSOF_MK, that places its source modules in this
 # directory.
 #
-# $Id: Configure,v 1.162 2013/01/02 17:13:48 abe Exp abe $
+# $Id: Configure,v 1.163 2014/10/13 22:31:08 abe Exp $
 
 # LSOF_CFLAGS_OVERRIDE=1 may be introduced through the environment to cause
 #	the library Makefile's CFLAGS definition to override any in the

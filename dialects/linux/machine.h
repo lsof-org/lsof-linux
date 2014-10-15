@@ -31,7 +31,7 @@
 
 
 /*
- * $Id: machine.h,v 1.36 2012/04/10 16:39:50 abe Exp abe $
+ * $Id: machine.h,v 1.37 2014/10/13 22:25:58 abe Exp $
  */
 
 

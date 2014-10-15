@@ -32,7 +32,7 @@
 #ifndef lint
 static char copyright[] =
 "@(#) Copyright 1997 Purdue Research Foundation.\nAll rights reserved.\n";
-static char *rcsid = "$Id: dsock.c,v 1.39 2013/01/02 17:02:36 abe Exp abe $";
+static char *rcsid = "$Id: dsock.c,v 1.40 2014/10/13 22:25:58 abe Exp $";
 #endif
 
 
@@ -154,6 +154,7 @@ struct uxsin {				/* UNIX socket information */
 	dev_t sb_dev;			/* stat(2) buffer device */
 	INODETYPE sb_ino;		/* stat(2) buffer node number */
 	dev_t sb_rdev;			/* stat(2) raw device number */
+	uint32_t ty;			/* socket type */
 	struct uxsin *next;
 };
 
@@ -266,6 +267,7 @@ _PROTOTYPE(static void get_unix,(char *p));
 _PROTOTYPE(static int isainb,(char *a, char *b));
 _PROTOTYPE(static void print_ax25info,(struct ax25sin *ap));
 _PROTOTYPE(static void print_ipxinfo,(struct ipxsin *ip));
+_PROTOTYPE(static char *sockty2str,(uint32_t ty, int *rf));
 
 #if	defined(HASIPv6)
 _PROTOTYPE(static struct rawsin *check_raw6,(INODETYPE i));
@@ -2281,6 +2283,7 @@ get_unix(p)
 	MALLOC_S len;
 	struct uxsin *np, *up;
 	FILE *us;
+	uint32_t ty;
 	static char *vbuf = (char *)NULL;
 	static size_t vsz = (size_t)0;
 /*
@@ -2378,6 +2381,16 @@ get_unix(p)
 	    } else
 		path = (char *)NULL;
 	/*
+	 * Assemble socket type.
+	 */
+	    ep = (char *)NULL;
+	    if (!fp[4] || !*fp[4]
+	    ||  (ty = (uint32_t)strtoul(fp[4], &ep, 16)) == (uint32_t)UINT32_MAX
+	    ||  !ep || *ep)
+	    {
+		ty = (uint32_t)UINT_MAX;
+	    }
+	/*
 	 * Allocate and fill a Unix socket info structure; link it to its
 	 * hash bucket.
 	 */
@@ -2390,6 +2403,7 @@ get_unix(p)
 	    up->inode = inode;
 	    up->pcb = pcb;
 	    up->sb_def = 0;
+	    up->ty = ty;
 	    if ((up->path = path) && (*path == '/')) {
 
 	    /*
@@ -2693,7 +2707,7 @@ process_proc_sock(p, pbr, s, ss, l, lss)
 	struct in_addr fs, ls;
 	struct icmpin *icmpp;
 	struct ipxsin *ip;
-	int i, len, nl;
+	int i, len, nl, rf;
 	struct nlksin *np;
 	struct packin *pp;
 	char *pr;
@@ -3033,50 +3047,8 @@ process_proc_sock(p, pbr, s, ss, l, lss)
 	 * number in the DEVICE column.
 	 */
 	    (void) snpf(Lf->type, sizeof(Lf->type), "pack");
-	    switch(pp->ty) {
-
-#if	defined(SOCK_STREAM)
-	    case SOCK_STREAM:
-		cp = "STREAM";
-		break;
-#endif	/* defined(SOCK_STREAM) */
-
-#if	defined(SOCK_DGRAM)
-	    case SOCK_DGRAM:
-		cp = "DGRAM";
-		break;
-#endif	/* defined(SOCK_DGRAM) */
-
-#if	defined(SOCK_RAW)
-	    case SOCK_RAW:
-		cp = "RAW";
-		break;
-#endif	/* defined(SOCK_RAW) */
-
-#if	defined(SOCK_RDM)
-	    case SOCK_RDM:
-		cp = "RDM";
-		break;
-#endif	/* defined(SOCK_RDM) */
-
-#if	defined(SOCK_SEQPACKET)
-	    case SOCK_SEQPACKET:
-		cp = "SEQPACKET";
-		break;
-#endif	/* defined(SOCK_SEQPACKET) */
-
-#if	defined(SOCK_PACKET)
-	    case SOCK_PACKET:
-		cp = "PACKET";
-		break;
-#endif	/* defined(SOCK_PACKET) */
-
-	    default:
-		(void) snpf(Namech, Namechl, "unknown type: %d", pp->ty);
-		cp = (char *)NULL;
-	    }
-	    if (cp)
-		(void) snpf(Namech, Namechl, "type=SOCK_%s", cp);
+	    cp = sockty2str(pp->ty, &rf);
+	    (void) snpf(Namech, Namechl, "type=%s%s", rf ? "" : "SOCK_", cp);
 	    switch (pp->pr) {
 
 #if	defined(ETH_P_LOOP)
@@ -3420,8 +3392,13 @@ process_proc_sock(p, pbr, s, ss, l, lss)
 		Lf->inode = (INODETYPE)s->st_ino;
 		Lf->inp_ty = 1;
 	    }
-	    path = up->path ? up->path : p;
-	    (void) enter_nm(path);
+	    cp = sockty2str(up->ty, &rf);
+	    (void) snpf(Namech, Namechl - 1, "%s%stype=%s",
+		up->path ? up->path : "",
+		up->path ? " " : "",
+		cp);
+	    Namech[Namechl - 1] = '\0';
+	    (void) enter_nm(Namech);
 	    if (Sfile) {
 	    
 	    /*
@@ -3943,4 +3920,64 @@ set_net_paths(p, pl)
 
 	pathl = 0;
 	(void) make_proc_path(p, pl, &UNIXpath, &pathl, "unix");
+}
+
+
+/*
+ * Sockty2str() -- convert socket type number to a string
+ */
+
+static char *
+sockty2str(ty, rf)
+	uint32_t ty;			/* socket type number */
+	int *rf;			/* result flag: 0 == known
+					 *		1 = unknown */
+{
+	int f = 0;			/* result flag */
+	char *sr;			/*string result */
+
+	switch (ty) {
+
+#if	defined(SOCK_STREAM)
+	case SOCK_STREAM:
+	    sr = "STREAM";
+	    break;
+#endif	/* defined(SOCK_STREAM) */
+
+#if	defined(SOCK_DGRAM)
+	case SOCK_DGRAM:
+	    sr = "DGRAM";
+	    break;
+#endif	/* defined(SOCK_DGRAM) */
+
+#if	defined(SOCK_RAW)
+	case SOCK_RAW:
+	    sr = "RAW";
+	    break;
+#endif	/* defined(SOCK_RAW) */
+
+#if	defined(SOCK_RDM)
+	case SOCK_RDM:
+	    sr = "RDM";
+	    break;
+#endif	/* defined(SOCK_RDM) */
+
+#if	defined(SOCK_SEQPACKET)
+	case SOCK_SEQPACKET:
+	    sr = "SEQPACKET";
+	    break;
+#endif	/* defined(SOCK_SEQPACKET) */
+
+#if	defined(SOCK_PACKET)
+	case SOCK_PACKET:
+	    sr = "PACKET";
+	    break;
+#endif	/* defined(SOCK_PACKET) */
+
+	default:
+	    f = 1;
+	    sr = "unknown";
+	}
+	*rf = f;
+	return(sr);
 }

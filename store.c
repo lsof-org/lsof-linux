@@ -32,7 +32,7 @@
 #ifndef lint
 static char copyright[] =
 "@(#) Copyright 1994 Purdue Research Foundation.\nAll rights reserved.\n";
-static char *rcsid = "$Id: store.c,v 1.41 2013/01/02 17:14:59 abe Exp abe $";
+static char *rcsid = "$Id: store.c,v 1.42 2014/10/13 22:36:20 abe Exp $";
 #endif
 
 
@@ -209,7 +209,7 @@ struct fieldsel FieldSel[] = {
     { LSOF_FID_CT,     0,  LSOF_FNM_CT,     &Fsv,     FSV_CT 	 }, /*  2 */
     { LSOF_FID_DEVCH,  0,  LSOF_FNM_DEVCH,  NULL,     0		 }, /*  3 */
     { LSOF_FID_DEVN,   0,  LSOF_FNM_DEVN,   NULL,     0		 }, /*  4 */
-    { LSOF_FID_FD,     0,  LSOF_FNM_FD,     NULL,     0		 }, /*  5 */
+    { LSOF_FID_FD,     1,  LSOF_FNM_FD,     NULL,     0		 }, /*  5 */
     { LSOF_FID_FA,     0,  LSOF_FNM_FA,     &Fsv,     FSV_FA	 }, /*  6 */
     { LSOF_FID_FG,     0,  LSOF_FNM_FG,     &Fsv,     FSV_FG	 }, /*  7 */
     { LSOF_FID_INODE,  0,  LSOF_FNM_INODE,  NULL,     0		 }, /*  8 */

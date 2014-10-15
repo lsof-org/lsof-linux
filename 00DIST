@@ -116,7 +116,7 @@
 		4.85, September 27, 2011
 		4.86, April 10, 2012
 		4.87, January 2, 2013
-		4.88, ??? ??? ???
+		4.88, October 13, 2014
 
 
 Dialects Supported
@@ -4692,7 +4692,7 @@ Supplement	Regenerated the 4.04 distribution to correct a non-
 		<yamato@redhat.com> developed the kernel patch to getxattr()
 		and supplied the lsof patch.
 
-4.88		??? ??? ???
+4.88		October 13, 2014
 		Reduced to 50 the number of open file descriptors lsof
 		attempts to close while trying to protect itself from a
 		file descriptor exec() attack.  This limits the overhead
@@ -4733,8 +4733,12 @@ Supplement	Regenerated the 4.04 distribution to correct a non-
 		file names.  Stephane Chazelas <stephane.chazelas@gmail.com>
 		reported the problem. 
 
-		Added support for Linux RDMA and CRYPTO protocal names with
-		code from Masatake YAMATO <yamato@redhat.com>.
+		Added support for Linux RDMA and CRYPTO protocal names and UNIX
+		socket type with code from Masatake YAMATO <yamato@redhat.com>.
+
+		Fixed field output to insure that the field descriptor field is
+		always selected, since it identifies the file set.  The bug was
+		reported by Gary Plewa <gary.m.plewa-1@lowes.com>.
 
 Vic Abell <abe@purdue.edu>
-??? ??? ???
+October 13, 2014

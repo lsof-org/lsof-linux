@@ -32,7 +32,7 @@
 #ifndef lint
 static char copyright[] =
 "@(#) Copyright 1994 Purdue Research Foundation.\nAll rights reserved.\n";
-static char *rcsid = "$Id: proc.c,v 1.47 2013/01/02 17:14:59 abe Exp abe $";
+static char *rcsid = "$Id: proc.c,v 1.48 2014/10/13 22:36:20 abe Exp $";
 #endif
 
 
@@ -1182,7 +1182,7 @@ print_proc()
 		    (void) printf("%c%s%c", LSOF_FID_LOGIN, cp, Terminator);
 	    }
 	    if (Terminator == '\0')
-	    putchar('\n');
+		putchar('\n');
 	}
 /*
  * Print files.
@@ -1192,25 +1192,29 @@ print_proc()
 		continue;
 	    rv = 1;
 	/*
-	 * If no field output selected, print dialects-specific formatted
+	 * If no field output selected, print dialect-specific formatted
 	 * output.
 	 */
 	    if (!Ffield) {
 		print_file();
 		continue;
 	    }
+	    lc = st = 0;
+	    if (FieldSel[LSOF_FIX_FD].st) {
+
+	    /*
+	     * Skip leading spaces in the file descriptor.  Print the field
+	     * identifier even if there are no characters after leading
+	     * spaces.
+	     */
+		for (cp = Lf->fd; *cp == ' '; cp++)
+		    ;
+		(void) printf("%c%s%c", LSOF_FID_FD, cp, Terminator);
+		lc++;
+	    }
 	/*
 	 * Print selected fields.
 	 */
-	    lc = st = 0;
-	    if (FieldSel[LSOF_FIX_FD].st) {
-		for (cp = Lf->fd; *cp == ' '; cp++)
-		    ;
-		if (*cp) {
-		    (void) printf("%c%s%c", LSOF_FID_FD, cp, Terminator);
-		    lc++;
-		}
-	    }
 	    if (FieldSel[LSOF_FIX_ACCESS].st) {
 		(void) printf("%c%c%c",
 		    LSOF_FID_ACCESS, Lf->access, Terminator);
