@@ -580,7 +580,7 @@ process_proc_node(p, pbr, s, ss, l, ls)
 	    Lf->inp_ty = 1;
 
 #if	defined(HASEPTOPTS)
-	    if (Lf->ntype == N_FIFO) {
+	    if ((Lf->ntype == N_FIFO) && FpipeE) {
 	    	(void) enter_pinfo();
 		Lf->sf |= SELPINFO;
 	    }
