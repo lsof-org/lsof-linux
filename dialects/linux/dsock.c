@@ -32,7 +32,7 @@
 #ifndef lint
 static char copyright[] =
 "@(#) Copyright 1997 Purdue Research Foundation.\nAll rights reserved.\n";
-static char *rcsid = "$Id: dsock.c,v 1.40 2014/10/13 22:25:58 abe Exp $";
+static char *rcsid = "$Id: dsock.c,v 1.40 2014/10/13 22:25:58 abe Exp abe $";
 #endif
 
 
@@ -744,8 +744,7 @@ get_icmp(p)
 	int h;
 	INODETYPE inode;
 	struct icmpin *np, *icmpp;
-	unsigned long pr;
-	MALLOC_S lal, ral, spl;
+	MALLOC_S lal, ral;
 	static char *vbuf = (char *)NULL;
 	static size_t vsz = (size_t)0;
 	FILE *xs;
@@ -2702,7 +2701,7 @@ process_proc_sock(p, pbr, s, ss, l, lss)
 	int lss;			/* *l status -- i.e, SB_* values */
 {
 	struct ax25sin *ap;
-	char *cp, *path, tbuf[64];
+	char *cp, *path = (char *)NULL, tbuf[64];
 	unsigned char *fa, *la;
 	struct in_addr fs, ls;
 	struct icmpin *icmpp;
@@ -3453,7 +3452,8 @@ process_proc_sock(p, pbr, s, ss, l, lss)
 		 * If the file has not yet been found and the stat buffer has
 		 * st_mode, search for the file by full path.
 		 */
-		    if (is_file_named(2, path, (struct mounts *)NULL,
+		    if (is_file_named(2, up->path ? up->path : p,
+			(struct mounts *)NULL,
 			((s->st_mode & S_IFMT) == S_IFCHR)) ? 1 : 0)
 		    {
 			Lf->sf |= SELNM;

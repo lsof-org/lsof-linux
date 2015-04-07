@@ -32,7 +32,7 @@
 #ifndef lint
 static char copyright[] =
 "@(#) Copyright 1997 Purdue Research Foundation.\nAll rights reserved.\n";
-static char *rcsid = "$Id: dproc.c,v 1.28 2014/10/13 22:25:58 abe Exp $";
+static char *rcsid = "$Id: dproc.c,v 1.28 2014/10/13 22:25:58 abe Exp abe $";
 #endif
 
 #include "lsof.h"
@@ -840,14 +840,14 @@ process_id(idp, idpl, cmd, uid, pid, ppid, pgid, tid)
 	{
 
 #if	defined(HASEPTOPTS)
-	    if (!FpipeE)
+	    if (!FeptE)
 		return(1);
 #else	/* !defined(HASEPTOPTS) */
 	    return(1);
 #endif	/* defined(HASEPTOPTS) */
 
 	}
-	if (Cckreg && !FpipeE) {
+	if (Cckreg && !FeptE) {
 
 	/*
 	 * If conditional checking of regular files is enabled, enable
@@ -868,7 +868,7 @@ process_id(idp, idpl, cmd, uid, pid, ppid, pgid, tid)
 	    alloc_lfile(CWD, -1);
 	    if (getlinksrc(path, pbuf, sizeof(pbuf), (char **)NULL) < 1) {
 		if (!Fwarn) {
-		    (void) memset((void *)&sb, 0, sizeof(sb));
+		    zeromem((char *)&sb, sizeof(sb));
 		    lnk = ss = 0;
 		    (void) snpf(nmabuf, sizeof(nmabuf), "(readlink: %s)",
 			strerror(errno));
@@ -917,7 +917,7 @@ process_id(idp, idpl, cmd, uid, pid, ppid, pgid, tid)
 	    alloc_lfile(RTD, -1);
 	    if (getlinksrc(path, pbuf, sizeof(pbuf), (char **)NULL) < 1) {
 		if (!Fwarn) {
-		    (void) memset((void *)&sb, 0, sizeof(sb));
+		    zeromem((char *)&sb, sizeof(sb));
 		    (void) snpf(nmabuf, sizeof(nmabuf), "(readlink: %s)",
 			strerror(errno));
 		    nmabuf[sizeof(nmabuf) - 1] = '\0';
@@ -963,7 +963,7 @@ process_id(idp, idpl, cmd, uid, pid, ppid, pgid, tid)
 	    (void) make_proc_path(idp, idpl, &path, &pathl, "exe");
 	    alloc_lfile("txt", -1);
 	    if (getlinksrc(path, pbuf, sizeof(pbuf), (char **)NULL) < 1) {
-		(void) memset((void *)&sb, 0, sizeof(sb));
+		zeromem((void *)&sb, sizeof(sb));
 		if (!Fwarn) {
 		    if ((errno != ENOENT) || uid) {
 			(void) snpf(nmabuf, sizeof(nmabuf), "(readlink: %s)",
@@ -1085,7 +1085,7 @@ process_id(idp, idpl, cmd, uid, pid, ppid, pgid, tid)
 	    (void) make_proc_path(dpath, i, &path, &pathl, fp->d_name);
 	    (void) alloc_lfile((char *)NULL, fd);
 	    if (getlinksrc(path, pbuf, sizeof(pbuf), &rest) < 1) {
-		(void) memset((void *)&sb, 0, sizeof(sb));
+		zeromem((char *)&sb, sizeof(sb));
 		lnk = ss = 0;
 		if (!Fwarn) {
 		    (void) snpf(nmabuf, sizeof(nmabuf), "(readlink: %s)",
@@ -1325,10 +1325,10 @@ process_proc_map(p, s, ss)
 	     * exempt file system) or stat(2) failed, so manufacture a partial
 	     * stat(2) reply from the process' maps file entry.
 	     *
-	     * If the file has been deleted, reset its type to "DEL"; otherwise
-	     * generate a stat() error name addition.
+	     * If the file has been deleted, reset its type to "DEL";
+	     * otherwise generate a stat() error name addition.
 	     */
-		(void) memset((void *)&sb, 0, sizeof(sb));
+		zeromem((char *)&sb, sizeof(sb));
 		sb.st_dev = dev;
 		sb.st_ino = (ino_t)inode;
 		sb.st_mode = S_IFREG;
@@ -1377,7 +1377,7 @@ process_proc_map(p, s, ss)
 			(void) add_nma(nmabuf, strlen(nmabuf));
 		    }
 		}
-		(void) memset((void *)&sb, 0, sizeof(sb));
+		zeromem((char *)&sb, sizeof(sb));
 		sb.st_dev = dev;
 		sb.st_ino = (ino_t)inode;
 		sb.st_mode = S_IFREG;
@@ -1438,7 +1438,6 @@ read_id_stat(p, id, cmd, ppid, pgid)
 	static char *cbf = (char *)NULL;
 	static MALLOC_S cbfa = 0;
 	FILE *fs;
-	MALLOC_S nl;
 	static char *vbuf = (char *)NULL;
 	static size_t vsz = (size_t)0;
 /*
@@ -1600,7 +1599,7 @@ statEx(p, s, ss)
  * If a stat() on a trimmed result succeeded, form partial results containing
  * only the device and raw device numbers.
  */
-	memset((void *)s, 0, sizeof(struct stat));
+	zeromem((char *)s, sizeof(struct stat));
 	if (st) {
 	    errno = 0;
 	    s->st_dev = sb.st_dev;

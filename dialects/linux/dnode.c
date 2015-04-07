@@ -32,7 +32,7 @@
 #ifndef lint
 static char copyright[] =
 "@(#) Copyright 1997 Purdue Research Foundation.\nAll rights reserved.\n";
-static char *rcsid = "$Id: dnode.c,v 1.24 2014/10/13 22:25:58 abe Exp $";
+static char *rcsid = "$Id: dnode.c,v 1.24 2014/10/13 22:25:58 abe Exp abe $";
 #endif
 
 
@@ -580,7 +580,7 @@ process_proc_node(p, pbr, s, ss, l, ls)
 	    Lf->inp_ty = 1;
 
 #if	defined(HASEPTOPTS)
-	    if ((Lf->ntype == N_FIFO) && FpipeE) {
+	    if ((Lf->ntype == N_FIFO) && FeptE) {
 	    	(void) enter_pinfo();
 		Lf->sf |= SELPINFO;
 	    }

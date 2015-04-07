@@ -117,6 +117,7 @@
 		4.86, April 10, 2012
 		4.87, January 2, 2013
 		4.88, October 13, 2014
+		4.89, ??? ??? 2015
 
 
 Dialects Supported
@@ -4740,5 +4741,33 @@ Supplement	Regenerated the 4.04 distribution to correct a non-
 		always selected, since it identifies the file set.  The bug was
 		reported by Gary Plewa <gary.m.plewa-1@lowes.com>.
 
+4.89		??? ??? 2015
+		Applied correction from Casper Dik <Casper.Dik@oracle.com> to
+		his patch for Solaris 11 that I applied incorrectly in revision
+		4.88.
+
+		Updated for latest version of FreeBSD 11.0-CURRENT.
+
+		Compensated for a missing FreeBSD 10.0 typedef of bool on the
+		i386 architecture.  Allen Hewes <rallenh@hotmail.com> provided
+		a test system. Andrey Chernov <ache@freebsd.org> provided
+		useful advice.
+
+		Improved tests/Add2TestDB script with a patch from Peter
+		Schiffer <pschiffe@redhat.com>.  Added patches from Peter to
+		eliminate Linux gcc warnings.  Updated Lsof.8 with improvements
+		supplied by Bjarni Ingi Gislason <bjarniig@rhi.hi.is>.
+
+		Changed FreeBSD global CFLAGS extraction per Terry Kennedy
+		<TERRY@tmk.com>.  Also made sure -DNEEDS_BOOL_TYPEDEF is
+		#define'd when the resulting CFLAGS doesn't contain it.  Terry
+		reported that need.
+
+		Improved Linux test for tcp.h in response to a report from
+		Cato Auestad <cato@cato.ninja>.  Cato did the testing.
+
+		Fixed Linux UNIX socket search by name bug reported by
+		Stephane Chazelas <stephane.chazelas@gmail.com>.
+
 Vic Abell <abe@purdue.edu>
-October 13, 2014
+??? ??? 2015

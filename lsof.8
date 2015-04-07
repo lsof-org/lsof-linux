@@ -1,6 +1,10 @@
-.ds VN 4.88
+.ds VN 4.89
 .TH LSOF 8 Revision-\*(VN
-.if !\n()P .nr )P 1v
+\" Register )P is used neither by this file nor any groff macro.  However,
+\" some versions of nroff require it.
+.if !\n(.g \{\
+.   if !\n()P .nr )P 1v
+.\}
 .SH NAME
 lsof \- list open files
 .SH SYNOPSIS
@@ -190,7 +194,7 @@ host aaa.bbb OR ccc.ddd.
 Options may be grouped together following a single prefix -- e.g.,
 the option set ``\fB\-a \-b \-C\fP'' may be stated as
 .BR \-abC .
-However, since values are optional following 
+However, since values are optional following
 .BR +|\-f ,
 .BR \-F ,
 .BR \-g ,
@@ -293,7 +297,7 @@ If
 .I c
 begins and ends with a slash ('/'), the characters between the slashes
 are interpreted as a regular expression.
-Shell meta\-characters in the regular expression must be quoted to prevent 
+Shell meta\-characters in the regular expression must be quoted to prevent
 their interpretation by the shell.
 The closing slash may be followed by these modifiers:
 .IP
@@ -543,7 +547,7 @@ options show the current default prefix \- e.g., ``.lsof''.)
 The suffix,
 .IR hostname ,
 is the first component of the host's name returned by
-.IR gethostname (2) .
+.IR gethostname (2).
 .IP
 When available, the
 .B b
@@ -854,7 +858,12 @@ AND option selection.
 An Internet address is specified in the form (Items in square
 brackets are optional.):
 .IP
+.ie !\n(.g \{
 [\fI46\fP][\fIprotocol\fP][@\fIhostname\fP\||\|\fIhostaddr\fP][:\fIservice\fP\||\|\fIport\fP]
+\}
+.el \{
+.RI [ 46 ][ protocol ][@ hostname \||\| hostaddr ][: service \||\| port ]
+\}
 .IP
 where:
 .nf
@@ -1111,11 +1120,11 @@ and
 options are available.
 .TP \w'names'u+4
 .B +|\-M
-Enables (\fB+\fP) or disables (\fB-\fP) the
+Enables (\fB+\fP) or disables (\fB\-\fP) the
 reporting of portmapper registrations for local TCP, UDP and UDPLITE ports,
 where port mapping is supported.
 (See the last paragraph of this option description for information about
-where portmapper registration reporting is suported.)
+where portmapper registration reporting is supported.)
 .IP
 The default reporting mode is set by the
 .I lsof
@@ -1125,7 +1134,7 @@ header file;
 is distributed with the HASPMAPENABLED #define deactivated, so
 portmapper reporting is disabled by default and must be requested
 with
-.BR \+M .
+.BR +M .
 Specifying
 .I lsof's
 .B \-h
@@ -1184,7 +1193,7 @@ help output will show the
 option.
 .TP \w'names'u+4
 .B \-n
-inhibits the conversion of network numbers to 
+inhibits the conversion of network numbers to
 host names for network files.
 Inhibiting conversion may make
 .I lsof
@@ -1463,7 +1472,7 @@ displays whatever value \- size or offset \- is appropriate and
 available for the type of file.
 .IP
 Since some types of files don't have true sizes \- sockets, FIFOs,
-pipes, etc. \- lsof displays for their sizes the content amounts in
+pipes, etc.\& \- lsof displays for their sizes the content amounts in
 their associated kernel buffers, if possible.
 .TP \w'names'u+4
 .BI \-S " [t]"
@@ -1568,7 +1577,7 @@ The following seven values may be reported:
 	KEEPALIVE	keep alive time (SO_KEEPALIVE)
 	LINGER	linger time (SO_LINGER)
 	MSS		maximum segment size (TCP_MAXSEG)
-	PQLEN	partial listen queue connections
+	PQLEN		partial listen queue connections
 	QLEN		established listen queue connections
 	QLIM		established listen queue limit
 	RCVBUF	receive buffer length (SO_RCVBUF)
@@ -1584,7 +1593,7 @@ questions in the
 .I lsof
 FAQ (The \fBFAQ\fP section gives its location.)
 .TP \w'names'u+4
-.B \-t 
+.B \-t
 specifies that
 .I lsof
 should produce terse output with process identifiers only and no header \-
@@ -1873,7 +1882,7 @@ Note that
 .I Z
 can be A:B:C or *:B:C or A:B:* or *:*:C to match against the A:B:C context.
 .TP \w'names'u+4
-.B --
+.B \-\-
 The double minus sign option is a marker that signals the end of
 the keyed options.
 It may be used, for example, when the first file name begins with
@@ -1889,7 +1898,7 @@ The first name may be separated from the preceding options with
 the ``--'' option.
 .IP
 If a
-.I name 
+.I name
 is the mounted\-on directory of a file system or the device of the
 file system,
 .I lsof
@@ -1925,7 +1934,7 @@ options.
 .IP
 If a
 .I name
-is the base name of a family of multiplexed files \- e. g, AIX's
+is the base name of a family of multiplexed files \- e.g, AIX's
 .IR /dev/pt[cs] " \-"
 .I lsof
 will list all the associated multiplexed files on the device that
@@ -2425,8 +2434,7 @@ the type of lock applied to the file:
 	\fBx\fP for an SCO OpenServer Xenix lock on part
 	of the file;
 .br
-	\fBX\fP for an SCO OpenServer Xenix lock on the
-	entire file;
+	\fBX\fP for an SCO OpenServer Xenix lock on the entire file;
 .br
 	space if there is no lock.
 .IP
@@ -2584,7 +2592,7 @@ file;
 .IP
 or ``PLWX'' for a
 .I /proc/xregs
-file'
+file;
 .IP
 or ``PMAP'' for a
 .I /proc
@@ -2915,7 +2923,7 @@ is the node number of a local file;
 .IP
 or the inode number of an NFS file in the server host;
 .IP
-or the Internet protocol type \- e. g, ``TCP'';
+or the Internet protocol type \- e.g, ``TCP'';
 .IP
 or ``STR'' for a stream;
 .IP
@@ -3168,7 +3176,7 @@ The single character listed first is the field identifier.
 	c	process command name (all characters from proc or
 		user structure)
 	C	file structure share count
-	d	file's device character code 
+	d	file's device character code
 	D	file's major/minor device number (0x<hexadecimal>)
 	f	file descriptor (always selected)
 	F	file structure address (0x<hexadecimal>)
@@ -3737,7 +3745,7 @@ and be allowed to surrender setgid permission.
 	FreeBSD 4.x, 4.1x, 5.x and [6789].x for x86-based systems
 	FreeBSD 5.x and [6789].x for Alpha, AMD64 and Sparc64-based
 	    systems
-	HP\-UX 11.00 
+	HP\-UX 11.00
 	NetBSD 1.[456], 2.x and 3.x for Alpha, x86, and SPARC-based
 	    systems
 	NEXTSTEP 3.[13] for NEXTSTEP architectures
@@ -3993,7 +4001,7 @@ be used to add a component of the personal device cache file path.
 The LSOFPERSDCPATH variable contents are inserted in the path at the
 place marked by the local system administrator with the ``%p''
 conversion in the HASPERSDC format specification of the dialect's
-.I machine.h 
+.I machine.h
 header file.
 (It's placed right after the home directory in the default
 .I lsof
@@ -4249,7 +4257,7 @@ For example, the major and minor device numbers that the
 and
 .IR stat (2)
 functions report for the directory on which CD-ROM files are mounted
-(typically 
+(typically
 .IR /cdrom )
 are not the same as the ones that it reports for the device on which
 CD-ROM files are mounted (typically
@@ -4358,10 +4366,10 @@ device cache file
 (The suffix,
 .IR hostname ,
 is the first component of the host's name returned by
-.IR gethostname (2) .)
+.IR gethostname (2).)
 .SH AUTHORS
 .I Lsof
-was written by Victor A. Abell <abe@purdue.edu> of Purdue University.
+was written by Victor A.\&Abell <abe@purdue.edu> of Purdue University.
 Many others have contributed to
 .IR lsof .
 They're listed in the

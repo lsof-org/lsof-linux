@@ -32,7 +32,7 @@
 #ifndef lint
 static char copyright[] =
 "@(#) Copyright 1994 Purdue Research Foundation.\nAll rights reserved.\n";
-static char *rcsid = "$Id: proc.c,v 1.48 2014/10/13 22:36:20 abe Exp $";
+static char *rcsid = "$Id: proc.c,v 1.48 2014/10/13 22:36:20 abe Exp abe $";
 #endif
 
 
@@ -170,7 +170,7 @@ alloc_lfile(nm, num)
 #endif	/* defined(HASMNTSTAT) */
 
 #if	defined(HASEPTOPTS)
-	Lf->pipend = 0;
+	Lf->chend = 0;
 #endif	/* defined(HASEPTOPTS) */
 
 #if	defined(HASSOOPT)
@@ -308,7 +308,7 @@ alloc_lproc(pid, pgid, ppid, uid, cmd, pss, sf)
 	Lp->pid = pid;
 
 #if	defined(HASEPTOPTS)
-	Lp->pipe = 0;
+	Lp->ept = 0;
 #endif	/* defined(HASEPTOPTS) */
 
 #if	defined(HASTASKS)
@@ -898,16 +898,15 @@ link_lfile()
  * While this might leave no file selection flags set, a later call to the
  * process_pinfo() function might set some. Also set the PS_PIPE flag for
  * the process.
- *
- * Also set the SELPINFO flag for the process.
  */
-	if (FpipeE) {
+	if (FeptE) {
 	    Lf->sf &= ~SELPINFO;
-	    Lp->pipe |= PS_PIPE;
+	    Lp->ept |= EPT_PIPE;
 	}
 #endif	/* defined(HASEPTOPTS) */
 
-	Lp->pss |= PS_SEC;
+	if (Lf->sf)
+	    Lp->pss |= PS_SEC;
 	if (Plf)
 	    Plf->next = Lf;
 	else
@@ -942,7 +941,7 @@ process_pinfo(f)
 	char nma[1024];			/* name addition buffer */
 	pinfo_t *pp;			/* previous pipe info */
 	
-	if (!FpipeE)
+	if (!FeptE)
 	    return;
 	for (Lf = Lp->file; Lf; Lf = Lf->next) {
 	    if ((Lf->ntype != N_FIFO) || (Lf->inp_ty != 1))
@@ -978,14 +977,14 @@ process_pinfo(f)
 				ep->pid, CmdLim, ep->cmd,&ef->fd[i],
 				ef->access);
 			    (void) add_nma(nma, strlen(nma));
-			    if (FpipeE == 2) {
+			    if (FeptE == 2) {
 
 			    /*
 			     * Endpoint files have been selected, so mark this
 			     * one for selection later.
 			     */
-				ef->pipend = 1;
-				ep->pipe |= PS_PIPE_END;
+				ef->chend = 1;
+				ep->ept |= EPT_PIPE_END;
 			    }
 			    pp = pp->next;
 			}
@@ -993,7 +992,7 @@ process_pinfo(f)
 		}
 		break;
 	    case 1:
-		if (!is_file_sel(Lp, Lf) && Lf->pipend) {
+		if (!is_file_sel(Lp, Lf) && Lf->chend) {
 
 		/*
 		 * This is an unselected end point file.  Select it and add

@@ -32,7 +32,7 @@
 #ifndef lint
 static char copyright[] =
 "@(#) Copyright 1994 Purdue Research Foundation.\nAll rights reserved.\n";
-static char *rcsid = "$Id: store.c,v 1.42 2014/10/13 22:36:20 abe Exp $";
+static char *rcsid = "$Id: store.c,v 1.42 2014/10/13 22:36:20 abe Exp abe $";
 #endif
 
 
@@ -131,6 +131,8 @@ int Fblock = 0;			/* -b option status */
 int FcColW;			/* FCT column width */
 int Fcntx = 0;			/* -Z option status */
 int FdColW;			/* FD column width */
+int FeptE = 0;			/* -E option status: 0==none, 1==info,
+				 * 2==info+files */
 int Ffilesys = 0;		/* -f option status:
 				 *    0 = paths may be file systems
 				 *    1 = paths are just files
@@ -156,8 +158,6 @@ int Fnfs = 0;			/* -N option status: 0==none, 1==find all,
 int Fnlink = 0;			/* -L option status */
 int Foffset = 0;		/* -o option status */
 int Fovhd = 0;			/* -O option status */
-int FpipeE = 0;			/* -E option status: 0==none, 1==info,
-				 * 2==info+files */
 int Fport = 1;			/* -P option status */
 
 #if	!defined(HASNORPC_H)

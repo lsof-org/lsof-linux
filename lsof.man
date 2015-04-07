@@ -17,7 +17,7 @@ SYNOPSIS
      [ -z [z] ] [ -Z [Z] ] [ -- ] [names]
 
 DESCRIPTION
-     Lsof revision 4.88 lists on its standard output file  infor-
+     Lsof revision 4.89 lists on its standard output file  infor-
      mation  about  files  opened  by processes for the following
      UNIX dialects:
 
@@ -60,7 +60,7 @@ OPTIONS
 
 
 
-SunOS 5.9          Last change: Revision-4.88                   1
+SunOS 5.9          Last change: Revision-4.89                   1
 
 
 
@@ -126,7 +126,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.88                   2
+SunOS 5.9          Last change: Revision-4.89                   2
 
 
 
@@ -192,7 +192,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.88                   3
+SunOS 5.9          Last change: Revision-4.89                   3
 
 
 
@@ -258,7 +258,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.88                   4
+SunOS 5.9          Last change: Revision-4.89                   4
 
 
 
@@ -324,7 +324,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.88                   5
+SunOS 5.9          Last change: Revision-4.89                   5
 
 
 
@@ -390,7 +390,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.88                   6
+SunOS 5.9          Last change: Revision-4.89                   6
 
 
 
@@ -456,7 +456,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.88                   7
+SunOS 5.9          Last change: Revision-4.89                   7
 
 
 
@@ -522,7 +522,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.88                   8
+SunOS 5.9          Last change: Revision-4.89                   8
 
 
 
@@ -588,7 +588,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.88                   9
+SunOS 5.9          Last change: Revision-4.89                   9
 
 
 
@@ -654,7 +654,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.88                  10
+SunOS 5.9          Last change: Revision-4.89                  10
 
 
 
@@ -683,7 +683,7 @@ Maintenance Procedures                                    LSOF(8)
               An Internet address is specified in the form (Items
               in square brackets are optional.):
 
-              [46][protocol][@hostname|hostaddr][:service|port]
+               [46][protocol][@hostname|hostaddr][:service|port]
 
               where:
                    46 specifies the IP version, IPv4 or IPv6
@@ -720,7 +720,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.88                  11
+SunOS 5.9          Last change: Revision-4.89                  11
 
 
 
@@ -786,7 +786,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.88                  12
+SunOS 5.9          Last change: Revision-4.89                  12
 
 
 
@@ -852,7 +852,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.88                  13
+SunOS 5.9          Last change: Revision-4.89                  13
 
 
 
@@ -887,7 +887,7 @@ Maintenance Procedures                                    LSOF(8)
               ports, where port mapping is supported.   (See  the
               last  paragraph  of  this  option  description  for
               information  about  where  portmapper  registration
-              reporting is suported.)
+              reporting is supported.)
 
               The default reporting  mode  is  set  by  the  lsof
               builder  with  the  HASPMAPENABLED  #define  in the
@@ -918,7 +918,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.88                  14
+SunOS 5.9          Last change: Revision-4.89                  14
 
 
 
@@ -984,7 +984,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.88                  15
+SunOS 5.9          Last change: Revision-4.89                  15
 
 
 
@@ -1050,7 +1050,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.88                  16
+SunOS 5.9          Last change: Revision-4.89                  16
 
 
 
@@ -1116,7 +1116,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.88                  17
+SunOS 5.9          Last change: Revision-4.89                  17
 
 
 
@@ -1182,7 +1182,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.88                  18
+SunOS 5.9          Last change: Revision-4.89                  18
 
 
 
@@ -1248,7 +1248,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.88                  19
+SunOS 5.9          Last change: Revision-4.89                  19
 
 
 
@@ -1314,7 +1314,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.88                  20
+SunOS 5.9          Last change: Revision-4.89                  20
 
 
 
@@ -1331,7 +1331,7 @@ Maintenance Procedures                                    LSOF(8)
                    KEEPALIVE keep alive time (SO_KEEPALIVE)
                    LINGER    linger time (SO_LINGER)
                    MSS       maximum segment size (TCP_MAXSEG)
-                   PQLEN     partial listen queue connections
+                   PQLEN          partial listen queue connections
                    QLEN      established listen queue connections
                    QLIM      established listen queue limit
                    RCVBUF    receive buffer length (SO_RCVBUF)
@@ -1380,7 +1380,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.88                  21
+SunOS 5.9          Last change: Revision-4.89                  21
 
 
 
@@ -1446,7 +1446,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.88                  22
+SunOS 5.9          Last change: Revision-4.89                  22
 
 
 
@@ -1512,7 +1512,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.88                  23
+SunOS 5.9          Last change: Revision-4.89                  23
 
 
 
@@ -1578,7 +1578,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.88                  24
+SunOS 5.9          Last change: Revision-4.89                  24
 
 
 
@@ -1644,7 +1644,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.88                  25
+SunOS 5.9          Last change: Revision-4.89                  25
 
 
 
@@ -1656,7 +1656,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
               If a name is the base name of a  family  of  multi-
-              plexed  files - e. g, AIX's /dev/pt[cs] - lsof will
+              plexed  files  - e.g, AIX's /dev/pt[cs] - lsof will
               list all the associated multiplexed  files  on  the
               device   that   are  open  -  e.g.,  /dev/pt[cs]/1,
               /dev/pt[cs]/2, etc.
@@ -1710,7 +1710,7 @@ AFS
 
 
 
-SunOS 5.9          Last change: Revision-4.88                  26
+SunOS 5.9          Last change: Revision-4.89                  26
 
 
 
@@ -1776,7 +1776,7 @@ SECURITY
 
 
 
-SunOS 5.9          Last change: Revision-4.88                  27
+SunOS 5.9          Last change: Revision-4.89                  27
 
 
 
@@ -1842,7 +1842,7 @@ OUTPUT
 
 
 
-SunOS 5.9          Last change: Revision-4.88                  28
+SunOS 5.9          Last change: Revision-4.89                  28
 
 
 
@@ -1908,7 +1908,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.88                  29
+SunOS 5.9          Last change: Revision-4.89                  29
 
 
 
@@ -1974,7 +1974,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.88                  30
+SunOS 5.9          Last change: Revision-4.89                  30
 
 
 
@@ -2036,11 +2036,11 @@ Maintenance Procedures                                    LSOF(8)
                      x for an SCO OpenServer Xenix lock  on  part
                      of the file;
                      X for an SCO OpenServer Xenix  lock  on  the
-                     entire file;
+                entire file;
 
 
 
-SunOS 5.9          Last change: Revision-4.88                  31
+SunOS 5.9          Last change: Revision-4.89                  31
 
 
 
@@ -2106,7 +2106,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.88                  32
+SunOS 5.9          Last change: Revision-4.89                  32
 
 
 
@@ -2172,7 +2172,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.88                  33
+SunOS 5.9          Last change: Revision-4.89                  33
 
 
 
@@ -2187,7 +2187,7 @@ Maintenance Procedures                                    LSOF(8)
 
                 or ``PLWU'' for a /proc/lwpusage file;
 
-                or ``PLWX'' for a /proc/xregs file'
+                or ``PLWX'' for a /proc/xregs file;
 
                 or ``PMAP'' for a /proc map file (map);
 
@@ -2238,7 +2238,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.88                  34
+SunOS 5.9          Last change: Revision-4.89                  34
 
 
 
@@ -2304,7 +2304,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.88                  35
+SunOS 5.9          Last change: Revision-4.89                  35
 
 
 
@@ -2370,7 +2370,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.88                  36
+SunOS 5.9          Last change: Revision-4.89                  36
 
 
 
@@ -2436,7 +2436,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.88                  37
+SunOS 5.9          Last change: Revision-4.89                  37
 
 
 
@@ -2502,7 +2502,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.88                  38
+SunOS 5.9          Last change: Revision-4.89                  38
 
 
 
@@ -2530,7 +2530,7 @@ Maintenance Procedures                                    LSOF(8)
                 or the inode number of an NFS file in the  server
                 host;
 
-                or the Internet protocol type - e. g, ``TCP'';
+                or the Internet protocol type - e.g, ``TCP'';
 
                 or ``STR'' for a stream;
 
@@ -2568,7 +2568,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.88                  39
+SunOS 5.9          Last change: Revision-4.89                  39
 
 
 
@@ -2634,7 +2634,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.88                  40
+SunOS 5.9          Last change: Revision-4.89                  40
 
 
 
@@ -2700,7 +2700,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.88                  41
+SunOS 5.9          Last change: Revision-4.89                  41
 
 
 
@@ -2766,7 +2766,7 @@ OUTPUT FOR OTHER PROGRAMS
 
 
 
-SunOS 5.9          Last change: Revision-4.88                  42
+SunOS 5.9          Last change: Revision-4.89                  42
 
 
 
@@ -2832,7 +2832,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.88                  43
+SunOS 5.9          Last change: Revision-4.89                  43
 
 
 
@@ -2898,7 +2898,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.88                  44
+SunOS 5.9          Last change: Revision-4.89                  44
 
 
 
@@ -2964,7 +2964,7 @@ AVOIDING KERNEL BLOCKS
 
 
 
-SunOS 5.9          Last change: Revision-4.88                  45
+SunOS 5.9          Last change: Revision-4.89                  45
 
 
 
@@ -3030,7 +3030,7 @@ ALTERNATE DEVICE NUMBERS
 
 
 
-SunOS 5.9          Last change: Revision-4.88                  46
+SunOS 5.9          Last change: Revision-4.89                  46
 
 
 
@@ -3096,7 +3096,7 @@ KERNEL NAME CACHE
 
 
 
-SunOS 5.9          Last change: Revision-4.88                  47
+SunOS 5.9          Last change: Revision-4.89                  47
 
 
 
@@ -3162,7 +3162,7 @@ DEVICE CACHE FILE
 
 
 
-SunOS 5.9          Last change: Revision-4.88                  48
+SunOS 5.9          Last change: Revision-4.89                  48
 
 
 
@@ -3228,7 +3228,7 @@ LSOF PERMISSIONS THAT AFFECT DEVICE CACHE FILE ACCESS
 
 
 
-SunOS 5.9          Last change: Revision-4.88                  49
+SunOS 5.9          Last change: Revision-4.89                  49
 
 
 
@@ -3294,7 +3294,7 @@ DEVICE CACHE FILE PATH FROM THE -D OPTION
 
 
 
-SunOS 5.9          Last change: Revision-4.88                  50
+SunOS 5.9          Last change: Revision-4.89                  50
 
 
 
@@ -3360,7 +3360,7 @@ DEVICE CACHE PATH FROM AN ENVIRONMENT VARIABLE
 
 
 
-SunOS 5.9          Last change: Revision-4.88                  51
+SunOS 5.9          Last change: Revision-4.89                  51
 
 
 
@@ -3426,7 +3426,7 @@ PERSONAL DEVICE CACHE PATH (DEFAULT)
 
 
 
-SunOS 5.9          Last change: Revision-4.88                  52
+SunOS 5.9          Last change: Revision-4.89                  52
 
 
 
@@ -3492,7 +3492,7 @@ MODIFIED PERSONAL DEVICE CACHE PATH
 
 
 
-SunOS 5.9          Last change: Revision-4.88                  53
+SunOS 5.9          Last change: Revision-4.89                  53
 
 
 
@@ -3558,7 +3558,7 @@ EXAMPLES
 
 
 
-SunOS 5.9          Last change: Revision-4.88                  54
+SunOS 5.9          Last change: Revision-4.89                  54
 
 
 
@@ -3624,7 +3624,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.88                  55
+SunOS 5.9          Last change: Revision-4.89                  55
 
 
 
@@ -3690,7 +3690,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.88                  56
+SunOS 5.9          Last change: Revision-4.89                  56
 
 
 
@@ -3756,7 +3756,7 @@ BUGS
 
 
 
-SunOS 5.9          Last change: Revision-4.88                  57
+SunOS 5.9          Last change: Revision-4.89                  57
 
 
 
@@ -3822,7 +3822,7 @@ FILES
 
 
 
-SunOS 5.9          Last change: Revision-4.88                  58
+SunOS 5.9          Last change: Revision-4.89                  58
 
 
 
@@ -3837,7 +3837,7 @@ Maintenance Procedures                                    LSOF(8)
                        host's name returned by gethostname(2).)
 
 AUTHORS
-     Lsof was written by Victor A. Abell <abe@purdue.edu> of Pur-
+     Lsof was written by Victor A.Abell <abe@purdue.edu> of  Pur-
      due  University.   Many  others  have  contributed  to lsof.
      They're listed in the 00CREDITS file of the  lsof  distribu-
      tion.
@@ -3888,7 +3888,7 @@ SEE ALSO
 
 
 
-SunOS 5.9          Last change: Revision-4.88                  59
+SunOS 5.9          Last change: Revision-4.89                  59
 
 
 

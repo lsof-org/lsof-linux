@@ -14,7 +14,7 @@
 # shell script, named $LSOF_MK, that places its source modules in this
 # directory.
 #
-# $Id: Configure,v 1.163 2014/10/13 22:31:08 abe Exp $
+# $Id: Configure,v 1.163 2014/10/13 22:31:08 abe Exp abe $
 
 # LSOF_CFLAGS_OVERRIDE=1 may be introduced through the environment to cause
 #	the library Makefile's CFLAGS definition to override any in the
@@ -889,13 +889,16 @@ case $LSOF_TGT in	# {
       11.*)			# Mac OS X 10.7 (Lion)
  	LSOF_VERS=1100
  	;;
-      12.*)			# Next Mac OS X
+      12.*)			# Mac OS X 10.8 (Mountain Lion)
  	LSOF_VERS=1200
  	;;
+      13.*)			# Next Mac OS X
+	LSOF_VERS=1300
+	;;
       *)
 	echo Unknown Darwin release: `uname -r`
-	echo Assuming Darwin 11.0
-	LSOF_VERS=1100
+	echo Assuming Darwin 12.0
+	LSOF_VERS=1200
 	;;
       esac	# }
     fi	# }
@@ -924,7 +927,7 @@ case $LSOF_TGT in	# {
       LSOF_CFGF="$LSOF_CFGF -DHASIPv6"
       LSOF_TMP1="net/ndrv_var.h net/raw_cb.h netinet/ip_var.h netinet/tcp_var.h sys/eventvar.h sys/file_internal.h sys/mount_internal.h sys/proc_internal.h sys/vnode_internal.h"
       ;;
-    900|1000|1100)
+    900|1000|1100|1200)
       LSOF_CFGF="$LSOF_CFGF -DHASIPv6"
       LSOF_TMP1=""
       LSOF_UNSUP=""
@@ -934,7 +937,7 @@ case $LSOF_TGT in	# {
 	LSOF_CFGF="$LSOF_CFGF -DNEEDS_MACH_PORT_T"
       fi	# }
       ;;
-    1200)
+    1300)
       LSOF_CFGF="$LSOF_CFGF -DHASIPv6"
       LSOF_TMP1=""
       ;;
@@ -1633,32 +1636,31 @@ kernel generation process.
       ;;
     esac	# }
 
-    # Get system CFLAGS from FREEBSD_MAKE_CONF (default=/etc/make.conf).
+    # Get system CFLAGS, if possible.
 
-    if test "X$FREEBSD_MAKE_CONF" = "X"	# {
-    then
-      FREEBSD_MAKE_CONF="/etc/make.conf"
-    fi	# }
-    if test -r $FREEBSD_MAKE_CONF	# {
-    then
-      LSOF_TMP1=`echo "all:\n.include <bsd.prog.mk>" | $LSOF_MAKE -f- -VCFLAGS`
-      LSOF_TMP=1
-      while test $LSOF_TMP -eq 1	# {
-      do
-	echo $LSOF_TMP1 | grep -q -e '-O'
-	if test $? -eq 0	# {
-	then
-	  if test "X$LSOF_DEBUG" = "X"
+    LSOF_TMP1=`echo "all:\n.include <bsd.prog.mk>" | $LSOF_MAKE -f- -VCFLAGS`
+    LSOF_TMP=1
+    while test $LSOF_TMP -eq 1	# {
+    do
+      echo $LSOF_TMP1 | grep -q -e '-O'
+      if test $? -eq 0	# {
+      then
+	if test "X$LSOF_DEBUG" = "X"
 	  then	# {
 	    LSOF_DEBUG=`echo $LSOF_TMP1 | sed 's/.*\(-O[^ $]*\).*/\1/'`
-	  fi	# }
-	  LSOF_TMP1=`echo $LSOF_TMP1 | sed 's/\(.*\)-O[^ $]*\(.*\)/\1 \2/' | sed 's/^  *//g' | sed 's/  */ /g' | sed 's/  *$//'`
-	else
-	  LSOF_TMP=0
-	fi	# }
-	LSOF_FBSD_ZFS_CFGF="$LSOF_CFGF $LSOF_TMP1"
-      done	# }
-      LSOF_CFGF="$LSOF_CFGF $LSOF_TMP1"
+	 fi	# }
+	LSOF_TMP1=`echo $LSOF_TMP1 | sed 's/\(.*\)-O[^ $]*\(.*\)/\1 \2/' | sed 's/^  *//g' | sed 's/  */ /g' | sed 's/  *$//'`
+      else
+	LSOF_TMP=0
+      fi	# }
+      LSOF_FBSD_ZFS_CFGF="$LSOF_CFGF $LSOF_TMP1"
+    done	# }
+    LSOF_CFGF="$LSOF_CFGF $LSOF_TMP1"
+    echo $LSOF_CFGF | grep -q NEEDS_BOOL_TYPEDEF
+    if test $? -ne 0
+    then	# {
+      LSOF_CFGF="$LSOF_CFGF -DNEEDS_BOOL_TYPEDEF"
+      LSOF_FBSD_ZFS_CFGF="$LSOF_FBSD_ZFS_CFGF -DNEEDS_BOOL_TYPEDEF"
     fi	# }
 
     # Determine path to FreeBSD sources.
@@ -2115,8 +2117,35 @@ LOCKF_OWNER4
 	      then
 		LSOF_CFGF="$LSOF_CFGF -DNEEDS_BOOLEAN_T"
 	      fi	# }
-	    fi	# |
+	    fi	# }
+	    if test -r ${LSOF_INCLUDE}/sys/sockbuf.h	# {
+	    then
+	      grep -q 'u_int	sb_ccc;' ${LSOF_INCLUDE}/sys/sockbuf.h
+	      if test $? -eq 0	# {
+	      then
+		LSOF_CFGF="$LSOF_CFGF -DHAS_SB_CCC"
+	      fi	# }
+	    fi	# }
+	    if test -r ${LSOF_INCLUDE}/sys/filedesc.h	# {
+	    then
+	      grep -q '^struct fdescenttbl {' ${LSOF_INCLUDE}/sys/filedesc.h
+	      if test $? -eq 0	# {
+	      then
+		LSOF_CFGF="$LSOF_CFGF -DHAS_FDESCENTTBL"
+	      fi	# }
+	    fi	# }
 	  fi	# }
+	fi	# }
+      fi	# }
+      if test $LSOF_VERS -eq 10000	# {
+      then
+
+      # Do specific FreeBSD 10 version-specific stuff.
+
+	LSOF_TMP1=`uname -m`
+	if test "X$LSOF_TMP1" = "Xi386"	# {
+	then
+	  LSOF_CFGF="$LSOF_CFGF -DNEEDS_BOOL_TYPEDEF"
 	fi	# }
       fi	# }
       ;;
@@ -2866,6 +2895,17 @@ return(0); }
     if ! test -r ${LSOF_INCLUDE}/rpc/rpc.h	# {
     then
       LSOF_CFGF="$LSOF_CFGF -DHASNORPC_H"
+    fi	# }
+
+    # Test for TCP_* symbols.
+
+    if test -r ${LSOF_INCLUDE}/netinet/tcp.h	# (
+    then
+      grep -q TCP_ESTABLISHED ${LSOF_INCLUDE}/netinet/tcp.h
+      if test $? -eq 0	# {
+      then
+	LSOF_CFGF="$LSOF_CFGF -DNEEDS_NETINET_TCPH"
+      fi	#}
     fi	# }
 
     # Test for SELinux support.

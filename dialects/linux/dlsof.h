@@ -31,7 +31,7 @@
 
 
 /*
- * $Id: dlsof.h,v 1.22 2012/04/10 16:39:50 abe Exp $
+ * $Id: dlsof.h,v 1.22 2012/04/10 16:39:50 abe Exp abe $
  */
 
 
@@ -50,11 +50,11 @@
 #include <unistd.h>
 #include <netinet/in.h>
 
-# if	defined(GLIBCV) || defined(__UCLIBC__)
+# if	defined(GLIBCV) || defined(__UCLIBC__) || defined(NEEDS_NETINET_TCPH)
 #include <netinet/tcp.h>
-# else	/* !defined(GLIBCV) && !defined(__UCLIBC__) */
+# else	/* !defined(GLIBCV) && !defined(__UCLIBC__) && !defined(NEEDS_NETINET_TCPH) */
 #include <linux/tcp.h>
-# endif	/* defined(GLIBCV) || defined(__UCLIBC__) */
+# endif	/* defined(GLIBCV) || defined(__UCLIBC__) || defined(NEEDS_NETINET_TCPH) */
 
 # if	!defined(HASNORPC_H)
 #include <rpc/rpc.h>

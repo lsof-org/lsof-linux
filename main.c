@@ -34,7 +34,7 @@
 #ifndef lint
 static char copyright[] =
 "@(#) Copyright 1994 Purdue Research Foundation.\nAll rights reserved.\n";
-static char *rcsid = "$Id: main.c,v 1.56 2014/10/13 22:36:20 abe Exp $";
+static char *rcsid = "$Id: main.c,v 1.56 2014/10/13 22:36:20 abe Exp abe $";
 #endif
 
 
@@ -87,7 +87,7 @@ main(argc, argv)
 
 #if	defined(HAS_STRFTIME)
 	char *fmt = (char *)NULL;
-	size_t fmtl;
+	size_t fmtl = (size_t)0;
 #endif	/* defined(HAS_STRFTIME) */
 
 #if	defined(HASZONES)
@@ -365,7 +365,7 @@ main(argc, argv)
 
 #if	defined(HASEPTOPTS)
 	    case 'E':
-		FpipeE = (GOp == '+') ? 2 : 1;
+		FeptE = (GOp == '+') ? 2 : 1;
 		break;
 #endif	/* defined(HASEPTOPTS) */
 
@@ -1299,7 +1299,7 @@ main(argc, argv)
 	     * Lf contents must be preserved, since they may point to a
 	     * malloc()'d area, and since Lf is used throughout the print
 	     */
-		if (FpipeE) {
+		if (FeptE) {
 		    lf = Lf;
 
 		/*
@@ -1308,7 +1308,7 @@ main(argc, argv)
 		 */
 		    for (i = 0; i < Nlproc; i++) {
 			Lp = (Nlproc > 1) ? slp[i] : &Lproc[i];
-			if (Lp->pss && (Lp->pipe & PS_PIPE))
+			if (Lp->pss && (Lp->ept & EPT_PIPE))
 			    (void) process_pinfo(0);
 		    }
 		/*
@@ -1317,7 +1317,7 @@ main(argc, argv)
 		 */
 		    for (i = 0; i < Nlproc; i++) {
 			Lp = (Nlproc > 1) ? slp[i] : &Lproc[i];
-			if (Lp->pipe & PS_PIPE_END)
+			if (Lp->ept & EPT_PIPE_END)
 			    (void) process_pinfo(1);
 		    }
 		    Lf = lf;

@@ -31,7 +31,7 @@
 
 
 /*
- * $Id: lsof.h,v 1.67 2014/10/13 22:36:20 abe Exp $
+ * $Id: lsof.h,v 1.67 2014/10/13 22:36:20 abe Exp abe $
  */
 
 
@@ -78,6 +78,16 @@ struct l_dev {
 	int v;				/* has been verified
 					 * (when DCUnsafe == 1) */
 };
+
+
+# if	defined(HASEPTOPTS)
+/*
+ * End point definitions
+ */
+
+#define	EPT_PIPE	1		/* process has pipe file */
+#define	EPT_PIPE_END	2		/* process has pipe end point file */
+# endif	/* defined(HASEPTOPTS) */
 
 
 /*
@@ -455,12 +465,6 @@ extern int ZoneColW;
 					 * by PID or UID */
 #define	PS_SEC		2		/* secondary process selection -- e.g.,
 					 * by directory or file */
-
-# if	defined(HASEPTOPTS)
-#define	PS_PIPE		1		/* process has a pipe file */
-#define	PS_PIPE_END	2		/* process has a pipe end point file */
-# endif	/* defined(HASEPTOPTS) */
-
 #define	SELCMD		0x0001		/* select process by command name */
 #define	SELCNTX		0x0002		/* select security context (-Z) */
 #define	SELFD		0x0004		/* select file by descriptor name */
@@ -639,7 +643,7 @@ extern int Fnfs;
 extern int Fnlink;
 extern int Foffset;
 extern int Fovhd;
-extern int FpipeE;
+extern int FeptE;
 
 extern int Fport;
 
@@ -725,7 +729,8 @@ struct lfile {
 	unsigned char off_def;		/* offset definition status */
 
 # if	defined(HASEPTOPTS)
-	unsigned char pipend;		/* pipe endpoint file */
+	unsigned char chend;		/* communication channel endpoint
+					 * file */
 # endif	/* defined(HASEPTOPTS) */
 
 	unsigned char rdev_def;		/* rdev definition status */
@@ -864,7 +869,7 @@ struct lproc {
 				 	 *	  1 = wholly selected
 				 	 *	  2 = partially selected */
 # if	defined(HASEPTOPTS)
-	short pipe;			/* pipe status -- PS_PIPE* values */
+	short ept;			/* end point status -- EPT_* values */
 # endif	/* defined(HASEPTOPTS) */
 
 	int pid;			/* process ID */
