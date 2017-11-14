@@ -31,7 +31,7 @@
 
 
 /*
- * $Id: proto.h,v 1.37 2014/10/13 22:36:20 abe Exp $
+ * $Id: proto.h,v 1.38 2015/07/07 20:16:58 abe Exp $
  */
 
 
@@ -112,8 +112,12 @@ _PROTOTYPE(extern void find_ch_ino,(void));
 
 # if	defined(HASEPTOPTS)
 _PROTOTYPE(extern void clear_pinfo,(void));
-_PROTOTYPE(extern pinfo_t *find_pendinfo,(struct lfile *lf, pinfo_t *pp));
+_PROTOTYPE(extern pxinfo_t *find_pendinfo,(struct lfile *lf, pxinfo_t *pp));
 _PROTOTYPE(extern void process_pinfo,(int f));
+#  if	defined(HASUXSOCKEPT)
+_PROTOTYPE(extern struct uxsin *find_uxsepti,(struct lfile *lf));
+_PROTOTYPE(extern void process_uxsinfo,(int f));
+#  endif	/* defined(HASUXSOCKEPT) */
 # endif	/* defined(HASEPTOPTS) */
 
 _PROTOTYPE(extern void free_lproc,(struct lproc *lp));

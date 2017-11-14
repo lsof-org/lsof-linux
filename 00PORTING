@@ -398,9 +398,9 @@ to be compiled and archived to liblsof.a.
 			USE_LIB_PROCESS_FILE selects it.
 
 			FILEPTR, DTYPE_PIPE, HASPIPEFN, DTYPE_GNODE,
-			DTYPE_INODE, DTYPE_PORT, DTYPE_VNODE,
+			DTYPE_INODE, DTYPE_PORT, DTYPE_VNODE, DTYPE_PTS,
 			HASF_VNODE, HASKQUEUE, HASPRIVFILETYPE,
-			HASPSXSHM and HASPSXSEM customize it.
+			HASPSXSHM, HASPSXSEM and HASPTSFN customize it.
 
     ptti.c		print_tcptpi() function
 
@@ -839,6 +839,9 @@ possibilities
 			See also the RMNT_EXPDEV and RMNT_FSTYPE
 			documentation in lib/rmnt.c
 
+    HASFUSEFS		is defined when the FreeBSD system has FUSE file system
+			support.
+
     HASGETBOOTFILE	indicates the NetBSD or OpenBSD dialect has
 			a getbootfile() function.
 
@@ -1156,6 +1159,9 @@ possibilities
     HASPSXSHM		indicates the dialect has support for the POSIX
 			shared memory file type.
 
+    HASPTSFN		indicates the dialect has a DNODE_PTS file descriptor
+			type and defines the function that processes it.
+
     HASPTYFS		indicates the *BSD dialect has a ptyfs file system.
 
     HASRNODE		enables/disables readrnode() in node.c.
@@ -1290,6 +1296,9 @@ possibilities
 			for u_int16 that may conflict with some other
 			header file's redefinition (e.g., <afs/std.h>).
 
+    HASUXSOCKEPT	indicates the Linux version has support for the
+			UNIX socket endpoint option.
+
     HASUTMPX		indicates the dialect has a <utmpx.h> header
 			file.
 
@@ -1369,11 +1378,11 @@ possibilities
 			X option to processes whose real user ID
 			is root.
 
-    HAS_ZFS		indicates the dialect has support for the ZFS file
-			system.
-
     HASXOPT_VALUE	defines the default binary value for the X option
 			in store.c.
+
+    HAS_ZFS		indicates the dialect has support for the ZFS file
+			system.
 
     HASZONES		the Solaris dialect has zones.
 
@@ -1860,4 +1869,4 @@ keep in mind the private, one-man nature of current lsof support.
 
 
 Vic Abell <abe@purdue.edu>
-??? ??? 2015
+??? ???, 2016

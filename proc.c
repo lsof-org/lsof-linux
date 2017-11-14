@@ -32,18 +32,11 @@
 #ifndef lint
 static char copyright[] =
 "@(#) Copyright 1994 Purdue Research Foundation.\nAll rights reserved.\n";
-static char *rcsid = "$Id: proc.c,v 1.48 2014/10/13 22:36:20 abe Exp abe $";
+static char *rcsid = "$Id: proc.c,v 1.49 2015/07/07 20:16:58 abe Exp abe $";
 #endif
 
 
 #include "lsof.h"
-
-
-/*
- * Local function prototypes
- */
-
-_PROTOTYPE(static int is_file_sel,(struct lproc *lp, struct lfile *lf));
 
 
 /*
@@ -60,12 +53,12 @@ add_nma(cp, len)
 	if (!cp || !len)
 	    return;
 	if (Lf->nma) {
-	    nl = (int)strlen(Lf->nma);
-	    Lf->nma = (char *)realloc((MALLOC_P *)Lf->nma,
-				      (MALLOC_S)(len + nl + 2));
+	    nl = (int) strlen(Lf->nma);
+	    Lf->nma = (char *) realloc((MALLOC_P *)Lf->nma,
+				       (MALLOC_S)(len + nl + 2));
 	} else {
 	    nl = 0;
-	    Lf->nma = (char *)malloc((MALLOC_S)(len + 1));
+	    Lf->nma = (char *) malloc((MALLOC_S)(len + 1));
 	}
 	if (!Lf->nma) {
 	    (void) fprintf(stderr, "%s: no name addition space: PID %ld, FD %s",
@@ -313,6 +306,7 @@ alloc_lproc(pid, pgid, ppid, uid, cmd, pss, sf)
 
 #if	defined(HASTASKS)
 	Lp->tid = 0;
+	Lp->tcmd = (char *)NULL;
 #endif	/* defined(HASTASKS) */
 
 	Lp->pgid = pgid;
@@ -506,7 +500,7 @@ examine_lproc()
  *	o  listing is selected by an ANDed option set (not all options)
  *	   that includes a single PID selection -- this one.
  */
-	if ((Lp->sf & SELPID) && !Selall) {
+	if ((Lp->sf & SELPID) && !AllProc) {
 	    if ((Selflags == SELPID)
 	    ||  (Fand && (Selflags & SELPID))) {
 		sbp = 1;
@@ -572,6 +566,14 @@ free_lproc(lp)
 	    (void) free((FREE_P *)lp->cmd);
 	    lp->cmd = (char *)NULL;
 	}
+
+#if	defined(HASTASKS)
+	if (lp->tcmd) {
+	    (void) free((FREE_P *)lp->tcmd);
+	    lp->tcmd = (char *)NULL;
+	}
+#endif	/* defined(HASTASKS) */
+
 }
 
 
@@ -639,7 +641,7 @@ is_cmd_excl(cmd, pss, sf)
  * is_file_sel() - is file selected?
  */
 
-static int
+int
 is_file_sel(lp, lf)
 	struct lproc *lp;		/* lproc structure pointer */
 	struct lfile *lf;		/* lfile structure pointer */
@@ -656,7 +658,7 @@ is_file_sel(lp, lf)
 	}
 #endif	/* defined(HASSECURITY) && defined(HASNOSOCKSECURITY) */
 
-	if (Selall)
+	if (AllProc)
 	    return(1);
 	if (Fand && ((lf->sf & Selflags) != Selflags))
 	    return(0);
@@ -750,13 +752,13 @@ is_proc_excl(pid, pgid, uid, pss, sf)
  * network selections from the file flags, so that the tests in is_file_sel()
  * work as expected.
  */
-	if (Selall) {
+	if (AllProc) {
 	    *pss = PS_PRI;
 
 #if	defined(HASSECURITY) && defined(HASNOSOCKSECURITY)
-	    *sf = SELALL & ~(SELNA | SELNET);
+	    *sf = SelAll & ~(SELNA | SELNET);
 #else	/* !defined(HASSECURITY) || !defined(HASNOSOCKSECURITY) */
-	    *sf = SELALL;
+	    *sf = SelAll;
 #endif	/* defined(HASSECURITY) && defined(HASNOSOCKSECURITY) */
 
 	    return(0);
@@ -894,14 +896,28 @@ link_lfile()
 #if	defined(HASEPTOPTS)
 /*
  * If endpoint info has been requested, clear the SELPINFO flag from the local
- * file structure, since it was set only to insure this file would be linked.
- * While this might leave no file selection flags set, a later call to the
- * process_pinfo() function might set some. Also set the PS_PIPE flag for
- * the process.
+ * pipe file structure, since it was set only to insure this file would be
+ * linked.  While this might leave no file selection flags set, a later call
+ * to the process_pinfo() function might set some.  Also set the EPT_PIPE flag.
  */
 	if (FeptE) {
-	    Lf->sf &= ~SELPINFO;
-	    Lp->ept |= EPT_PIPE;
+	    if (Lf->sf & SELPINFO) {
+		Lp->ept |= EPT_PIPE;
+		Lf->sf &= ~SELPINFO;
+	    }
+
+# if	defined(HASUXSOCKEPT)
+/*
+ * Process UNIX socket endpoint files the same way by clearing the SELUXINFO
+ * flag and setting the EPT_UXS flag, letting a later call to process_uxsinfo()
+ * set selection flags.
+ */
+	    if (Lf->sf & SELUXSINFO) {
+		Lp->ept |= EPT_UXS;
+		Lf->sf &= ~SELUXSINFO;
+	    }
+# endif	/* defined(HASUXSOCKEPT) */
+
 	}
 #endif	/* defined(HASEPTOPTS) */
 
@@ -939,14 +955,14 @@ process_pinfo(f)
 	struct lfile *ef;		/* pipe endpoint file */
 	int i;				/* temporary index */
 	char nma[1024];			/* name addition buffer */
-	pinfo_t *pp;			/* previous pipe info */
+	pxinfo_t *pp;			/* previous pipe info */
 	
 	if (!FeptE)
 	    return;
 	for (Lf = Lp->file; Lf; Lf = Lf->next) {
 	    if ((Lf->ntype != N_FIFO) || (Lf->inp_ty != 1))
 		continue;
-	    pp = (pinfo_t *)NULL;
+	    pp = (pxinfo_t *)NULL;
 	    switch(f) {
 	    case 0:
 
@@ -956,8 +972,8 @@ process_pinfo(f)
 		if (is_file_sel(Lp, Lf)) {
 
 		/*
-		 * This file has been selected by some criterion other than its
-		 * being a pipe.  Look up the pipe's endpoints.
+		 * This file has been selected by some criterion other than
+		 * its being a pipe.  Look up the pipe's endpoints.
 		 */
 		    do {
 			if ((pp = find_pendinfo(Lf, pp))) {
@@ -981,9 +997,9 @@ process_pinfo(f)
 
 			    /*
 			     * Endpoint files have been selected, so mark this
-			     * one for selection later.
+			     * one for selection later. Set the type to PIPE.
 			     */
-				ef->chend = 1;
+				ef->chend = CHEND_PIPE;
 				ep->ept |= EPT_PIPE_END;
 			    }
 			    pp = pp->next;
@@ -992,7 +1008,7 @@ process_pinfo(f)
 		}
 		break;
 	    case 1:
-		if (!is_file_sel(Lp, Lf) && Lf->chend) {
+		if (!is_file_sel(Lp, Lf) && (Lf->chend & CHEND_PIPE)) {
 
 		/*
 		 * This is an unselected end point file.  Select it and add
@@ -1148,6 +1164,8 @@ print_proc()
 #if	defined(HASTASKS)
 	    if (FieldSel[LSOF_FIX_TID].st && Lp->tid)
 		(void) printf("%c%d%c", LSOF_FID_TID, Lp->tid, Terminator);
+	    if (FieldSel[LSOF_FIX_TCMD].st && Lp->tcmd)
+		(void) printf("%c%s%c", LSOF_FID_TCMD, Lp->tcmd, Terminator);
 #endif	/* defined(HASTASKS) */
 
 #if	defined(HASZONES)

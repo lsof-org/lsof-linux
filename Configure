@@ -14,7 +14,7 @@
 # shell script, named $LSOF_MK, that places its source modules in this
 # directory.
 #
-# $Id: Configure,v 1.163 2014/10/13 22:31:08 abe Exp abe $
+# $Id: Configure,v 1.164 2015/07/07 20:16:58 abe Exp abe $
 
 # LSOF_CFLAGS_OVERRIDE=1 may be introduced through the environment to cause
 #	the library Makefile's CFLAGS definition to override any in the
@@ -293,8 +293,8 @@ do
       echo "rm -rf AFSHeaders AFSVersion solaris11 version.h vnode_if.h"
       rm -f ${LSOF_HLP_BASE}* cd9660_node.h lockf_owner.h fbsd_minor.h
       echo "rm -f ${LSOF_HLP_BASE}* cd9660_node.h lockf_owner.h fbsd_minor.h"
-      rm -f opt_kdtrace.h
-      echo "rm -f opt_kdtrace.h"
+      rm -f opt_kdtrace.h opt_random.h
+      echo "rm -f opt_kdtrace.h opt_random.h"
       rm -f dialects/aix/aix5/j2/j2_snapshot.h
       echo "rm -f dialects/aix/aix5/j2/j2_snapshot.h"
       rm -f dialects/sun/solaris10	# DEBUG -- for s10_44
@@ -1620,6 +1620,10 @@ kernel generation process.
 	LSOF_TSTBIGF=" "
 	LSOF_VERS=11000
 	;;
+      12*)
+	LSOF_TSTBIGF=" "
+	LSOF_VERS=12000
+	;;
       *)
 	echo Unknown FreeBSD release: `uname -r`
 	rm -f $LSOF_HLP
@@ -1631,7 +1635,7 @@ kernel generation process.
     # Clear LSOF_UNSUP message for supported versions of FreeBSD.
     
     case $LSOF_VERS in  # {
-    4090|8020|8030|8040|9000|10000|11000)
+    4090|8020|8030|8040|9000|10000|11000|12000)
       LSOF_UNSUP=""
       ;;
     esac	# }
@@ -1958,6 +1962,12 @@ FBSD_MINOR3
 	    LSOF_CFGF="$LSOF_CFGF -DHAS_SYS_SX_H"
 	  fi	# }
 
+	# Do FUSE file system test,
+
+	  if test -r ${FREEBSD_SYS}/fs/fuse/fuse_node.h	# {
+	  then
+	    LSOF_CFGF="$LSOF_CFGF -DHASFUSEFS"
+	  fi	# }
 	# Do ZFS test.  Try for the newer OpenSolaris files first -- i.e.,
 	# the ones in ${FREEBSD_SYS}/cddl/contrib/opensolaris.  If that fails,
 	# try for the older ones in ${FREEBSD}/contrib/opensolaris.
@@ -1999,6 +2009,15 @@ FBSD_MINOR3
 		  LSOF_FBSD_ZFS_CFGF="$LSOF_FBSD_ZFS_CFGF -DHAS_CV_TIMEDWAIT_SBT"
 		fi	# }
 	    fi	#}
+	    if test -r /usr/include/sys/random.h	# {
+	    then
+	      grep -q opt_random.h /usr/include/sys/random.h
+	      if test $? -eq 0	# {
+	      then
+		rm -f opt_random.h
+		touch opt_random.h
+	      fi	# }
+	    fi	# }
 	  fi	# }
 	  if test -r ${LSOF_INCLUDE}/sys/vnode.h	# {
 	  then
@@ -2927,6 +2946,13 @@ return(0); }
     then
       LSOF_CFGF="$LSOF_CFGF -DHASSELINUX"
       LSOF_CFGL="$LSOF_CFGL -lselinux"
+    fi	# }
+
+  # Test for UNIX socket endpoint support.
+
+    if test -r ${LSOF_INCLUDE}/linux/sock_diag.h -a -r ${LSOF_INCLUDE}/linux/unix_diag.h  # {
+    then
+      LSOF_CFGF="$LSOF_CFGF -DHASUXSOCKEPT"
     fi	# }
     LSOF_DIALECT_DIR="linux"
     LSOF_CFGF="$LSOF_CFGF -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"

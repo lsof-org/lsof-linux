@@ -31,7 +31,7 @@
 
 
 /*
- * $Id: lsof.h,v 1.67 2014/10/13 22:36:20 abe Exp abe $
+ * $Id: lsof.h,v 1.68 2015/07/07 20:16:58 abe Exp abe $
  */
 
 
@@ -85,8 +85,16 @@ struct l_dev {
  * End point definitions
  */
 
+#define	CHEND_PIPE	1		/* pipe endpoint ID */
 #define	EPT_PIPE	1		/* process has pipe file */
 #define	EPT_PIPE_END	2		/* process has pipe end point file */
+
+#  if	defined(HASUXSOCKEPT)
+#define	CHEND_UXS	2		/* UNIX socket endpoint ID */
+#define	EPT_UXS		4		/* process has a UNIX socket file */
+#define	EPT_UXS_END	8		/* process has a UNIX socket end point
+					 * file */
+#  endif	/* defined(HASUXSOCKEPT) */
 # endif	/* defined(HASEPTOPTS) */
 
 
@@ -374,6 +382,9 @@ static struct utmp dummy_utmp;		/* to get login name length */
 
 #define	RPTTM		15		/* default repeat seconds */
 #define	RTD		" rtd"		/* root directory fd name */
+#define	TASKCMDL	9		/* maximum number of characters from
+					 * command name to print in TASKCMD
+					 * column */
 #define TCPTPI_FLAGS	0x0001		/* report TCP/TPI socket options and
 					 * state, and TCP_NODELAY state */
 #define	TCPTPI_QUEUES	0x0002		/* report TCP/TPI queue lengths */
@@ -447,8 +458,10 @@ extern int PpidColW;
 #define SZTTL		"SIZE"
 #define	SZOFFTTL	"SIZE/OFF"
 extern int SzOffColW;
-#define	TIDTTL		"TID"
-extern	int TidColW;
+#define	TASKCMDTTL	"TASKCMD"
+extern	int TaskCmdColW;
+#define	TASKTIDTTL	"TID"
+extern	int TaskTidColW;
 #define TYPETTL		"TYPE"
 extern int TypeColW;
 #define	USERTTL		"USER"
@@ -482,6 +495,8 @@ extern int ZoneColW;
 #define	SELTASK		0x4000		/* select tasks (-K) */
 #define	SELPINFO	0x8000		/* selected for pipe info (cleared in
 					 * link_lfile() */
+#define	SELUXSINFO	0x10000		/* selected for UNIX socket info
+					 * cleared in link_lfile() */
 #define	SELALL		(SELCMD|SELCNTX|SELFD|SELNA|SELNET|SELNM|SELNFS|SELPID|SELUID|SELUNX|SELZONE|SELTASK)
 #define	SELPROC		(SELCMD|SELCNTX|SELPGID|SELPID|SELUID|SELZONE|SELTASK)
 					/* process selecters */
@@ -502,6 +517,8 @@ struct afsnode {			/* AFS pseudo-node structure */
 	long nlink;
 };
 # endif	/* defined(HAS_AFS) */
+
+extern int AllProc;
 
 # if	defined(HAS_STD_CLONE)
 struct clone {
@@ -558,12 +575,34 @@ struct pff_tab {			/* print file flags table structure */
 # endif	/* defined(HASFSTRUCT) */
 
 # if	defined(HASEPTOPTS)
-typedef struct pinfo {			/* hashed pipe inode numbers */
-	INODETYPE ino;			/* pipe's inode */
-	struct lfile *lf;		/* connected pipe file */
+typedef struct pxinfo {			/* hashed pipe or UNIX socket inode
+					 * information */
+	INODETYPE ino;			/* file's inode */
+	struct lfile *lf;		/* connected peer file */
 	int lpx;			/* connected process index */
-	struct pinfo *next;		/* next entry for hashed inode */
-} pinfo_t;
+	struct pxinfo *next;		/* next entry for hashed inode */
+} pxinfo_t;
+
+typedef struct uxsin {			/* UNIX socket information */
+	INODETYPE inode;		/* node number */
+	char *pcb;			/* protocol control block */
+	char *path;			/* file path */
+	unsigned char sb_def;		/* stat(2) buffer definitions */
+	dev_t sb_dev;			/* stat(2) buffer device */
+	INODETYPE sb_ino;		/* stat(2) buffer node number */
+	dev_t sb_rdev;			/* stat(2) raw device number */
+	uint32_t ty;			/* socket type */
+
+#  if	defined(HASEPTOPTS) && defined(HASUXSOCKEPT)
+	struct uxsin *icons;		/* incoming socket conections */
+	unsigned int icstat;		/* incoming connection status
+					 * 0 == none */
+	pxinfo_t *pxinfo;		/* inode information */
+	struct uxsin *peer;	        /* connected peer(s) info */
+#  endif	/* defined(HASEPTOPTS) && defined(HASUXSOCKEPT) */
+
+	struct uxsin *next;
+} uxsin_t;
 # endif	/* defined(HASEPTOPTS) */
 
 
@@ -696,6 +735,7 @@ extern struct fieldsel FieldSel[];
 extern int Hdr;
 
 enum IDType {PGID, PID};
+extern int  IgnTasks;
 extern char *InodeFmt_d;
 extern char *InodeFmt_x;
 extern int LastPid;
@@ -743,7 +783,7 @@ struct lfile {
 	char fd[FDLEN];
 	char iproto[IPROTOL];
 	char type[TYPEL];
-	short sf;			/* select flags -- SEL* symbols */
+	unsigned int sf;		/* select flags -- SEL* symbols */
 	int ch;				/* VMPC channel: -1 = none */
 	int ntype;			/* node type -- N_* value */
 	SZOFFTYPE off;
@@ -876,6 +916,7 @@ struct lproc {
 
 # if	defined(HASTASKS)
 	int tid;			/* task ID */
+	char *tcmd;			/* task command name */
 # endif	/* HASTASKS */
 
 	int pgid;			/* process group ID */
@@ -973,8 +1014,9 @@ extern int Procsrch;
 extern int PrPass;
 extern int RptTm;
 extern struct l_dev **Sdev;
-extern int Selall;
+extern int SelAll;
 extern int Selflags;
+extern int SelProc;
 extern int Setgid;
 extern int Selinet;
 extern int Setuidroot;
@@ -986,7 +1028,9 @@ extern char *SzOffFmt_0t;
 extern char *SzOffFmt_d;
 extern char *SzOffFmt_dv;
 extern char *SzOffFmt_x;
-extern int TaskPrtFl;
+extern int TaskCmdLim;
+extern int TaskPrtCmd;
+extern int TaskPrtTid;
 extern int TcpStAlloc;
 extern unsigned char *TcpStI;
 extern int TcpStIn;

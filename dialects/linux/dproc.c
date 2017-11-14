@@ -32,7 +32,7 @@
 #ifndef lint
 static char copyright[] =
 "@(#) Copyright 1997 Purdue Research Foundation.\nAll rights reserved.\n";
-static char *rcsid = "$Id: dproc.c,v 1.28 2014/10/13 22:25:58 abe Exp abe $";
+static char *rcsid = "$Id: dproc.c,v 1.29 2015/07/07 19:46:33 abe Exp abe $";
 #endif
 
 #include "lsof.h"
@@ -90,7 +90,8 @@ _PROTOTYPE(static int read_id_stat,(char *p, int id, char **cmd, int *ppid,
 				    int *pgid));
 _PROTOTYPE(static void process_proc_map,(char *p, struct stat *s, int ss));
 _PROTOTYPE(static int process_id,(char *idp, int idpl, char *cmd, UID_ARG uid,
-				  int pid, int ppid, int pgid, int tid));
+				  int pid, int ppid, int pgid, int tid,
+				  char *tcmd));
 _PROTOTYPE(static int statEx,(char *p, struct stat *s, int *ss));
  
 
@@ -182,9 +183,10 @@ void
 gather_proc_info()
 {
 	char *cmd, *tcmd;
+	char cmdbuf[MAXPATHLEN];
 	struct dirent *dp;
 	unsigned char ht, pidts;
-	int n, nl, pgid, pid, ppid, rv, tid, tpgid, tppid, tx;
+	int n, nl, pgid, pid, ppid, prv, rv, tid, tpgid, tppid, tx;
 	static char *path = (char *)NULL;
 	static int pathl = 0;
 	static char *pidpath = (char *)NULL;
@@ -252,7 +254,7 @@ gather_proc_info()
 	     * If only ORed process selection options have been specified,
 	     * enable conditional file skipping and socket file only checking.
 	     */
-		if ((Selflags & SELFILE) || !(Selflags & SELPROC))
+		if ((Selflags & SELFILE) || !(Selflags & SelProc))
 		    Cckreg = Ckscko = 0;
 		else
 		    Cckreg = Ckscko = 1;
@@ -301,13 +303,26 @@ gather_proc_info()
 		continue;
 	    uid = (UID_ARG)sb.st_uid;
 	    ht = pidts = 0;
+	/*
+	 * Get the PID's command name.
+	 */
+	    (void) make_proc_path(pidpath, n, &path, &pathl, "stat");
+	    if ((prv = read_id_stat(path, pid, &cmd, &ppid, &pgid)) < 0) 
+		cmd = "(unknown)";
 
 #if	defined(HASTASKS)
 	/*
-	 * If task reporting is selected, check the tasks of the process first,
-	 * so that the "-p<PID> -aK" options work properly.
+	 * Task reporting has been selected, so save the process' command
+	 * string, so that task processing won't change it in the buffer of
+	 * read_id_stat().
+	 *
+	 * Check the tasks of the process first, so that the "-p<PID> -aK"
+	 * options work properly.
 	 */
-	    if ((Selflags & SELTASK)) {
+	    else if (!IgnTasks && (Selflags & SELTASK)) {
+		strncpy(cmdbuf, cmd, sizeof(cmdbuf) - 1);
+		cmdbuf[sizeof(cmdbuf) - 1] = '\0';
+		cmd = cmdbuf;
 		(void) make_proc_path(pidpath, n, &taskpath, &taskpathl,
 				      "task");
 		tx = n + 4;
@@ -361,8 +376,8 @@ gather_proc_info()
 		    /*
 		     * Attempt to record the task.
 		     */
-			if (!process_id(tidpath, (tx + 1 + nl+ 1), tcmd, uid,
-					pid, tppid, tpgid, tid))
+			if (!process_id(tidpath, (tx + 1 + nl+ 1), cmd, uid,
+					pid, tppid, tpgid, tid, tcmd))
 			{
 			    ht = 1;
 			}
@@ -375,15 +390,14 @@ gather_proc_info()
 	/*
 	 * If the main process is a task and task selection has been specified
 	 * along with option ANDing, enter the main process temporarily as a
-	 * task,  so that the "-aK" option set lists the main process along
+	 * task, so that the "-aK" option set lists the main process along
 	 * with its tasks.
 	 */
-	    (void) make_proc_path(pidpath, n, &path, &pathl, "stat");
-	    if (((rv = read_id_stat(path, pid, &cmd, &ppid, &pgid)) >= 0) 
-	    &&   (rv != 1))
-	    {
-		tid = (Fand && ht && pidts && (Selflags & SELTASK)) ? pid : 0;
-		if ((!process_id(pidpath, n, cmd, uid, pid, ppid, pgid, tid))
+	    if ((prv >= 0) && (prv != 1)) {
+		tid = (Fand && ht && pidts && !IgnTasks && (Selflags & SELTASK))
+		    ? pid : 0;
+		if ((!process_id(pidpath, n, cmd, uid, pid, ppid, pgid, tid,
+				 (char *)NULL))
 		&&  tid)
 		{
 		    Lp->tid = 0;
@@ -797,7 +811,7 @@ open_proc_stream(p, m, buf, sz, act)
  */
 
 static int
-process_id(idp, idpl, cmd, uid, pid, ppid, pgid, tid)
+process_id(idp, idpl, cmd, uid, pid, ppid, pgid, tid, tcmd)
 	char *idp;			/* pointer to ID's path */
 	int idpl;			/* pointer to ID's path length */
 	char *cmd;			/* pointer to ID's command */
@@ -806,6 +820,7 @@ process_id(idp, idpl, cmd, uid, pid, ppid, pgid, tid)
 	int ppid;			/* parent PID */
 	int pgid;			/* parent GID */
 	int tid;			/* task ID, if non-zero */
+	char *tcmd;			/* task command, if non-NULL) */
 {
 	int av;
 	static char *dpath = (char *)NULL;
@@ -854,11 +869,27 @@ process_id(idp, idpl, cmd, uid, pid, ppid, pgid, tid)
 	 * socket file only checking, based on the process' selection
 	 * status.
 	 */
-	    Ckscko = (sf & SELPROC) ? 0 : 1;
+	    Ckscko = (sf & SelProc) ? 0 : 1;
 	}
 	alloc_lproc(pid, pgid, ppid, uid, cmd, (int)pss, (int)sf);
-	Lp->tid = tid;
 	Plf = (struct lfile *)NULL;
+
+#if	defined(HASTASKS)
+/*
+ * Enter task information.
+ */
+	Lp->tid = tid;
+	if (tid && tcmd) {
+	    if (!(Lp->tcmd = mkstrcpy(tcmd, (MALLOC_S *)NULL))) {
+		(void) fprintf(stderr,
+		    "%s: PID %d, TID %d, no space for task name: ",
+		    Pn, pid, tid);
+		safestrprt(tcmd, stderr, 1);
+		Exit(1);
+	    }
+	}
+#endif	/* defined(HASTASKS) */
+
 /*
  * Process the ID's current working directory info.
  */

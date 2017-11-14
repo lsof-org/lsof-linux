@@ -32,12 +32,28 @@
 #ifndef lint
 static char copyright[] =
 "@(#) Copyright 1997 Purdue Research Foundation.\nAll rights reserved.\n";
-static char *rcsid = "$Id: dsock.c,v 1.40 2014/10/13 22:25:58 abe Exp abe $";
+static char *rcsid = "$Id: dsock.c,v 1.41 2015/07/07 19:46:33 abe Exp $";
 #endif
 
 
 #include "lsof.h"
 #include <sys/xattr.h>
+
+
+#if	defined(HASEPTOPTS) && defined(HASUXSOCKEPT)
+/*
+ * UNIX endpoint definitions
+ */
+
+#include <sys/socket.h>			/* for AF_NETLINK */
+#include <linux/rtnetlink.h>		/* for NETLINK_INET_DIAG */
+#include <linux/sock_diag.h>		/* for SOCK_DIAG_BY_FAMILY */
+#include <linux/unix_diag.h>		/* for unix_diag_req */
+#include <string.h>			/* memset */
+#include <stdint.h>			/* for unt8_t */
+#include <unistd.h>			/* for getpagesize */
+#define SOCKET_BUFFER_SIZE (getpagesize() < 8192L ? getpagesize() : 8192L)
+#endif	/* defined(HASEPTOPTS) && defined(HASUXSOCKEPT) */
 
 
 /*
@@ -146,18 +162,6 @@ struct tcp_udp6 {			/* IPv6 TCP and UDP socket
 };
 #endif	/* defined(HASIPv6) */
 
-struct uxsin {				/* UNIX socket information */
-	INODETYPE inode;		/* node number */
-	char *pcb;			/* protocol control block */
-	char *path;			/* file path */
-	unsigned char sb_def;		/* stat(2) buffer definitions */
-	dev_t sb_dev;			/* stat(2) buffer device */
-	INODETYPE sb_ino;		/* stat(2) buffer node number */
-	dev_t sb_rdev;			/* stat(2) raw device number */
-	uint32_t ty;			/* socket type */
-	struct uxsin *next;
-};
-
 
 /*
  * Local static values
@@ -237,7 +241,7 @@ static char *UDPpath = (char *)NULL;	/* path to UDP /proc information */
 static char *UDPLITEpath = (char *)NULL;
 					/* path to UDPLITE /proc information */
 static char *UNIXpath = (char *)NULL;	/* path to UNIX /proc information */
-static struct uxsin **Uxsin = (struct uxsin **)NULL;
+static uxsin_t **Uxsin = (uxsin_t **)NULL;
 					/* UNIX socket info, hashed by inode */
 
 
@@ -246,6 +250,17 @@ static struct uxsin **Uxsin = (struct uxsin **)NULL;
  */
 
 _PROTOTYPE(static struct ax25sin *check_ax25,(INODETYPE i));
+
+#if	defined(HASEPTOPTS) && defined(HASUXSOCKEPT)
+_PROTOTYPE(static void enter_uxsinfo,(uxsin_t *up));
+_PROTOTYPE(static void fill_uxicino,(INODETYPE si, INODETYPE sc));
+_PROTOTYPE(static void fill_uxpino,(INODETYPE si, INODETYPE pi));
+_PROTOTYPE(static int get_diagmsg,(int sockfd));
+_PROTOTYPE(static void get_uxpeeri,(void));
+_PROTOTYPE(static void parse_diag,(struct unix_diag_msg *dm, int len));
+_PROTOTYPE(static void prt_uxs,(uxsin_t *p, int mk));
+#endif	/* defined(HASEPTOPTS) && defined(HASUXSOCKEPT) */
+
 _PROTOTYPE(static struct icmpin *check_icmp,(INODETYPE i));
 _PROTOTYPE(static struct ipxsin *check_ipx,(INODETYPE i));
 _PROTOTYPE(static struct nlksin *check_netlink,(INODETYPE i));
@@ -253,7 +268,7 @@ _PROTOTYPE(static struct packin *check_pack,(INODETYPE i));
 _PROTOTYPE(static struct rawsin *check_raw,(INODETYPE i));
 _PROTOTYPE(static struct sctpsin *check_sctp,(INODETYPE i));
 _PROTOTYPE(static struct tcp_udp *check_tcpudp,(INODETYPE i, char **p));
-_PROTOTYPE(static struct uxsin *check_unix,(INODETYPE i));
+_PROTOTYPE(static uxsin_t *check_unix,(INODETYPE i));
 _PROTOTYPE(static void get_ax25,(char *p));
 _PROTOTYPE(static void get_icmp,(char *p));
 _PROTOTYPE(static void get_ipx,(char *p));
@@ -540,19 +555,19 @@ check_tcpudp6(i, p)
  * check_unix() - check for UNIX domain socket
  */
 
-static struct uxsin *
+static uxsin_t *
 check_unix(i)
 	INODETYPE i;			/* socket file's inode number */
 {
 	int h;
-	struct uxsin *up;
+	uxsin_t *up;
 
 	h = INOHASH(i);
 	for (up = Uxsin[h]; up; up = up->next) {
 	    if (i == up->inode)
 		return(up);
 	}
-	return((struct uxsin *)NULL);
+	return((uxsin_t *)NULL);
 }
 
 
@@ -729,6 +744,394 @@ get_ax25(p)
 	}
 	(void) fclose(as);
 }
+
+
+#if	defined(HASEPTOPTS) && defined(HASUXSOCKEPT)
+/*
+ * enter_uxsinfo() -- enter unix socket info
+ * 	entry	Lf = local file structure pointer
+ * 		Lp = local process structure pointer
+ */
+
+static void
+enter_uxsinfo (up)
+	uxsin_t *up;
+{
+	pxinfo_t *pi;			/* pxinfo_t structure pointer */
+	struct lfile *lf;		/* local file structure pointer */
+	struct lproc *lp;		/* local proc structure pointer */
+	pxinfo_t *np;			/* new pxinfo_t structure pointer */
+
+	for (pi = up->pxinfo; pi; pi = pi->next) {
+	    lf = pi->lf;
+	    lp = &Lproc[pi->lpx];
+	    if (pi->ino == Lf->inode) {
+		if ((lp->pid == Lp->pid) && !strcmp(lf->fd, Lf->fd))
+		    return;
+	    }
+	}
+	if (!(np = (pxinfo_t *)malloc(sizeof(pxinfo_t)))) {
+	    (void) fprintf(stderr,
+		"%s: no space for pipeinfo in uxsinfo, PID %d\n",
+		Pn, Lp->pid);
+	    Exit(1);
+	}
+	np->ino = Lf->inode;
+	np->lf = Lf;
+	np->lpx = Lp - Lproc;
+	np->next = up->pxinfo;
+	up->pxinfo = np;
+}
+
+
+/*
+ * fill_uxicino() -- fill incoming connection inode number
+ */
+
+static void
+fill_uxicino (si, ic)
+	INODETYPE si;			/* UNIX socket inode number */
+	INODETYPE ic;			/* incomining UNIX socket connection 
+					 * inode number */
+{
+	uxsin_t *psi;			/* pointer to socket's information */
+	uxsin_t *pic;			/* pointer to incoming connection's
+					 * information */
+
+	if ((psi = check_unix(si))) {
+	    if (psi->icstat || psi->icons)
+		return;
+	    if ((pic = check_unix(ic))) {
+		psi->icstat = 1;
+		psi->icons = pic;
+	    }
+	}
+}
+
+
+/*
+ * fill_uxpino() -- fill in UNIX socket's peer inode number
+ */
+
+static void
+fill_uxpino(si, pi)
+	INODETYPE si;		/* UNIX socket inode number */
+	INODETYPE pi;		/* UNIX socket peer's inode number */
+{
+	uxsin_t *pp, *up;
+
+	if ((up = check_unix(si))) {
+	    if (!up->peer) {
+		if (pp = check_unix(pi))
+		    up->peer = pp;
+	    }
+	}
+}
+
+
+/*
+ * find_uxepti(lf) -- find UNIX socket endpoint info
+ */
+
+uxsin_t *
+find_uxepti(lf)
+	struct lfile *lf;		/* pipe's lfile */
+{
+	uxsin_t *up;
+
+	up = check_unix(lf->inode);
+	return(up ? up->peer: (uxsin_t *)NULL);
+}
+
+
+/*
+ * get_diagmsg() -- get UNIX socket's diag message
+ */
+
+static int
+get_diagmsg(sockfd)
+	int sockfd;			/* socket's file descriptor */
+{
+	struct msghdr msg;		/* message header */
+	struct nlmsghdr nlh;		/* header length */
+	struct unix_diag_req creq;	/* connection request */
+	struct sockaddr_nl sa;		/* netlink socket address */
+	struct iovec iov[2];		/* I/O vector */
+/*
+ * Build and send message to socket's file descriptor, asking for its
+ * diagnostic message.
+ */
+	zeromem((char *)&msg, sizeof(msg));
+	zeromem((char *)&sa, sizeof(sa));
+	zeromem((char *)&nlh, sizeof(nlh));
+	zeromem((char *)&creq, sizeof(creq));
+	sa.nl_family = AF_NETLINK;
+	creq.sdiag_family = AF_UNIX;
+	creq.sdiag_protocol = 0;
+	memset((void *)&creq.udiag_states, -1, sizeof(creq.udiag_states));
+	creq.udiag_ino = (INODETYPE)0;
+	creq.udiag_show = UDIAG_SHOW_PEER|UDIAG_SHOW_ICONS;
+	nlh.nlmsg_len = NLMSG_LENGTH(sizeof(creq));
+	nlh.nlmsg_flags = NLM_F_DUMP | NLM_F_REQUEST;
+	nlh.nlmsg_type = SOCK_DIAG_BY_FAMILY;
+	iov[0].iov_base = (void *)&nlh;
+	iov[0].iov_len = sizeof(nlh);
+	iov[1].iov_base = (void *) &creq;
+	iov[1].iov_len = sizeof(creq);
+	msg.msg_name = (void *) &sa;
+	msg.msg_namelen = sizeof(sa);
+	msg.msg_iov = iov;
+	msg.msg_iovlen = 2;
+	return(sendmsg(sockfd, &msg, 0));
+}
+
+
+/*
+ * get_uxpeeri() - get UNIX socket peer inode information 
+ */
+
+static void
+get_uxpeeri()
+{
+	struct unix_diag_msg *dm;	/* pointer to diag message */
+	struct nlmsghdr *hp;		/* netlink structure header pointer */
+	int nb = 0;			/* number of bytes */
+	int ns = 0;			/* netlink socket */
+	uint8_t rb[SOCKET_BUFFER_SIZE];	/* receive buffer */
+	int rl = 0;			/* route info length */
+/*
+ * Get a netlink socket.
+ */
+	if ((ns = socket(AF_NETLINK, SOCK_DGRAM, NETLINK_SOCK_DIAG)) == -1) {
+	    (void) fprintf(stderr, "%s: netlink socket error: %s\n",
+		Pn, strerror(errno));
+	    Exit(1);
+	}
+/*
+ * Request peer information.
+ */
+	if (get_diagmsg(ns) < 0) {
+	    (void) fprintf(stderr, "%s: netlink peer request error: %s\n",
+		Pn, strerror(errno));
+	    goto get_uxpeeri_exit;
+	}
+/*
+ * Receive peer information.
+ */
+	while (1) {
+	    if ((nb = recv(ns, rb, sizeof(rb), 0)) <= 0)
+		goto get_uxpeeri_exit;
+	    hp = (struct nlmsghdr *)rb;
+	    while (NLMSG_OK(hp, nb)) {
+		if(hp->nlmsg_type == NLMSG_DONE)
+		    goto get_uxpeeri_exit;
+		if(hp->nlmsg_type == NLMSG_ERROR) {
+		    (void) fprintf(stderr,
+			"%s: netlink UNIX socket msg peer info error\n", Pn);
+		    goto get_uxpeeri_exit;
+		}
+		dm = (struct unix_diag_msg *)NLMSG_DATA(hp);
+		rl = hp->nlmsg_len - NLMSG_LENGTH(sizeof(*dm));
+		parse_diag(dm, rl);
+		hp = NLMSG_NEXT(hp, nb);
+	    }
+	}
+
+get_uxpeeri_exit:
+
+	    (void) close(ns);
+}
+
+
+/*
+ * parse_diag() -- parse UNIX diag message
+ */
+
+static void
+parse_diag(dm, len)
+	struct unix_diag_msg *dm;	/* pointer to diag message */
+	int len;			/* message length */
+{
+	struct rtattr *rp;		/* route info pointer */
+	int i;				/* tmporary index */
+	int icct;			/* incoming connection count */
+	uint32_t *icp;			/* incoming connection pointer */
+	uint32_t inoc, inop;		/* inode numbers */
+
+	if (!dm || (dm->udiag_family != AF_UNIX) || !(inop = dm->udiag_ino)
+	||  (len <= 0)
+	) {
+	    return;
+	}
+	rp = (struct rtattr *)(dm + 1);
+/*
+ * Process route information.
+ */
+	while (RTA_OK(rp, len)) {
+	    switch (rp->rta_type) {
+	    case UNIX_DIAG_PEER:
+		if (len < 4) {
+		    (void) fprintf(stderr,
+			"%s: unix_diag: msg length (%d) < 4)\n", Pn, len);
+		    return;
+		}
+		if ((inoc = *(uint32_t *)RTA_DATA(rp))) {
+		    fill_uxpino((INODETYPE)inop, (INODETYPE)inoc);
+		    fill_uxpino((INODETYPE)inoc, (INODETYPE)inop);
+		}
+		break;
+	    case UNIX_DIAG_ICONS:
+		icct = RTA_PAYLOAD(rp), 
+		icp = (uint32_t *)RTA_DATA(rp);
+
+		for (i = 0; i < icct; i += sizeof(uint32_t), icp++) {
+		    fill_uxicino((INODETYPE)inop, (INODETYPE)*icp);
+		}
+	    }
+	    rp = RTA_NEXT(rp, len);
+	}
+}
+
+
+/*
+ * prt_uxs() -- print UNIX socket information
+ */
+
+static void
+prt_uxs(p, mk)
+	uxsin_t *p;			/* peer info */
+	int mk;				/* 1 == mark for later processing */
+{
+	struct lproc *ep;		/* socket endpoint process */
+	struct lfile *ef;		/* socket endpoint file */
+	int i;				/* temporary index */
+	int len;			/* string length */
+	char nma[1024];			/* character buffer */
+	pxinfo_t *pp;			/* previous pipe info of socket */
+
+	(void) strcpy(nma, "->INO=");
+	len = (int)strlen(nma);
+	(void) snpf(&nma[len], sizeof(nma) - len - 1, InodeFmt_d, p->inode);
+	(void) add_nma(nma, strlen(nma));
+	for (pp = p->pxinfo; pp; pp = pp->next) {
+
+	/*
+	 * Add a linked socket's PID, command name and FD to the name column
+	 * addition.
+	 */
+	    ep = &Lproc[pp->lpx];
+	    ef = pp->lf;
+	    for (i = 0; i < (FDLEN - 1); i++) {
+		if (ef->fd[i] != ' ')
+		    break;
+	    }
+	    (void) snpf(nma, sizeof(nma) - 1, "%d,%.*s,%s%c",
+			ep->pid, CmdLim, ep->cmd, &ef->fd[i], ef->access);
+	    (void) add_nma(nma, strlen(nma));
+	    if (mk && FeptE == 2) {
+
+	    /*
+	     * Endpoint files have been selected, so mark this
+	     * one for selection later.
+	     */
+		ef->chend = CHEND_UXS;
+		ep->ept |= EPT_UXS_END;
+	    }
+	}
+}
+
+
+/*
+ * process_uxsinfo() -- process UNIX socket information, adding it to selected
+ *			UNIX socket files and selecting UNIX socket end point
+ *			files (if requested)
+ */
+
+void
+process_uxsinfo(f)
+	int f;				/* function:
+					 *     0 == process selected socket
+					 *     1 == process socket end point
+					 */
+{
+	uxsin_t *p;			/* peer UNIX socket info pointer */
+	uxsin_t *tp;			/* temporary UNIX socket info pointer */
+
+	if (!FeptE)
+	    return;
+	for (Lf = Lp->file; Lf; Lf = Lf->next) {
+	    if (strcmp(Lf->type, "unix"))
+		continue;
+	    switch (f) {
+	    case 0:
+
+	    /*
+	     * Process already selected socket.
+	     */
+		if (is_file_sel(Lp, Lf)) {
+
+		/*
+		 * This file has been selected by some criterion other than its
+		 * being a socket.  Look up the socket's endpoints.
+		 */
+		    p = find_uxepti(Lf);
+		    if (p && p->inode)
+			prt_uxs(p, 1);
+		    if ((tp = check_unix(Lf->inode))) {
+			if (tp->icons) {
+			    if (tp->icstat) {
+				p = tp->icons;
+				while (p != tp) {
+				    if (p && p->inode)
+					prt_uxs(p, 1);
+				    p = p->icons;
+				}
+			    } else {
+				for (p = tp->icons; !p->icstat; p = p->icons)
+				    ; /* DO NOTHING */
+				if (p->icstat && p->inode)
+				    prt_uxs (p, 1);
+			    }
+			}
+		    }
+		}
+		break;
+	    case 1:
+		if (!is_file_sel(Lp, Lf) && (Lf->chend & CHEND_UXS)) {
+
+		/*
+		 * This is an unselected end point UNIX socket file.  Select it
+		 * and add its end point information to peer's name column
+		 * addition.
+		 */
+		    Lf->sf = Selflags;
+		    Lp->pss |= PS_SEC;
+		    p = find_uxepti(Lf);
+		    if (p && p->inode)
+			prt_uxs(p, 0);
+		    else if ((tp = check_unix(Lf->inode))) {
+			if (tp->icons) {
+			    if (tp->icstat) {
+				p = tp->icons;
+				while (p != tp) {
+				    if (p  && p->inode)
+					prt_uxs(p, 0);
+				    p = p->icons;
+				}
+			    } else {
+				for (p = tp->icons; !p->icstat; p = p->icons)
+				    ; /* DO NOTHING */
+				if (p->icstat && p->inode)
+				    prt_uxs(p, 0);
+			    }
+			}
+		    }
+		}
+		break;
+	    }
+	}
+}
+#endif	/* defined(HASEPTOPTS) && defined(HASUXSOCKEPT) */
  
  
 /*
@@ -1810,7 +2213,7 @@ get_tcpudp(p, pr, clr)
 	 */
 	    TcpUdp_bucks = INOBUCKS;
 	    if ((fs = fopen(SockStatPath, "r"))) {
-		while(fgets(buf, sizeof(buf) - 1, fs)) {
+		while (fgets(buf, sizeof(buf) - 1, fs)) {
 		    if (get_fields(buf, (char *)NULL, &fp, (int *)NULL, 0) != 3)
 			continue;
 		    if (!fp[0] || strcmp(fp[0], "sockets:")
@@ -1841,7 +2244,7 @@ get_tcpudp(p, pr, clr)
 	if (!(fs = open_proc_stream(p, "r", &vbuf, &vsz, 0)))
 	    return;
 	nf = 12;
-	while(fgets(buf, sizeof(buf) - 1, fs)) {
+	while (fgets(buf, sizeof(buf) - 1, fs)) {
 	    if (get_fields(buf,
 			   (nf == 12) ? (char *)NULL : ":",
 			   &fp, (int *)NULL, 0)
@@ -2130,7 +2533,7 @@ get_tcpudp6(p, pr, clr)
 	    TcpUdp6_bucks = INOBUCKS;
 	    h = i = nf = 0;
 	    if ((fs = fopen(SockStatPath6, "r"))) {
-		while(fgets(buf, sizeof(buf) - 1, fs)) {
+		while (fgets(buf, sizeof(buf) - 1, fs)) {
 		    if (get_fields(buf, (char *)NULL, &fp, (int *)NULL, 0) != 3)
 			continue;
 		    if (!fp[0]
@@ -2173,7 +2576,7 @@ get_tcpudp6(p, pr, clr)
 	if (!(fs = open_proc_stream(p, "r", &vbuf, &vsz, 0)))
 	    return;
 	nf = 12;
-	while(fgets(buf, sizeof(buf) - 1, fs)) {
+	while (fgets(buf, sizeof(buf) - 1, fs)) {
 	    if (get_fields(buf,
 			   (nf == 12) ? (char *)NULL : ":",
 			   &fp, (int *)NULL, 0)
@@ -2280,11 +2683,16 @@ get_unix(p)
 	int h, nf;
 	INODETYPE inode;
 	MALLOC_S len;
-	struct uxsin *np, *up;
+	uxsin_t *np, *up;
 	FILE *us;
 	uint32_t ty;
 	static char *vbuf = (char *)NULL;
 	static size_t vsz = (size_t)0;
+
+#if	defined(HASEPTOPTS) && defined(HASUXSOCKEPT)
+	pxinfo_t *pp, *pnp;
+#endif	/* defined(HASEPTOPTS) && defined(HASUXSOCKEPT) */
+
 /*
  * Do second time cleanup or first time setup.
  */
@@ -2292,20 +2700,28 @@ get_unix(p)
 	    for (h = 0; h < INOBUCKS; h++) {
 		for (up = Uxsin[h]; up; up = np) {
 		    np = up->next;
+
+#if	defined(HASEPTOPTS) && defined(HASUXSOCKEPT)
+		    for (pp = up->pxinfo; pp; pp = pnp) {
+		        pnp = pp->next;
+		        (void) free((FREE_P *)pp);
+		    }
+#endif	/* defined(HASEPTOPTS) && defined(HASUXSOCKEPT) */
+
 		    if (up->path)
 			(void) free((FREE_P *)up->path);
 		    if (up->pcb)
 			(void) free((FREE_P *)up->pcb);
 		    (void) free((FREE_P *)up);
 		}
-		Uxsin[h] = (struct uxsin *)NULL;
+		Uxsin[h] = (uxsin_t *)NULL;
 	    }
 	} else {
-	    Uxsin = (struct uxsin **)calloc(INOBUCKS, sizeof(struct uxsin *));
+	    Uxsin = (uxsin_t **)calloc(INOBUCKS, sizeof(uxsin_t *));
 	    if (!Uxsin) {
 		(void) fprintf(stderr,
 		    "%s: can't allocate %d bytes for Unix socket info\n",
-		    Pn, (int)(INOBUCKS * sizeof(struct uxsin *)));
+		    Pn, (int)(INOBUCKS * sizeof(uxsin_t *)));
 	    }
 	}
 /*
@@ -2393,13 +2809,14 @@ get_unix(p)
 	 * Allocate and fill a Unix socket info structure; link it to its
 	 * hash bucket.
 	 */
-	    if (!(up = (struct uxsin *)malloc(sizeof(struct uxsin)))) {
+	    if (!(up = (uxsin_t *)malloc(sizeof(uxsin_t)))) {
 		(void) fprintf(stderr,
 		    "%s: can't allocate %d bytes for uxsin struct\n",
-		    Pn, (int)sizeof(struct uxsin));
+		    Pn, (int)sizeof(uxsin_t));
 		Exit(1);
 	    }
 	    up->inode = inode;
+	    up->next = (uxsin_t *)NULL;
 	    up->pcb = pcb;
 	    up->sb_def = 0;
 	    up->ty = ty;
@@ -2424,9 +2841,28 @@ get_unix(p)
 		    up->sb_rdev = sb.st_rdev;
 		}
 	    }
+
+#if	defined(HASEPTOPTS) && defined(HASUXSOCKEPT)
+	/*
+	 * Clean UNIX socket endpoint values.
+	 */
+	    up->icstat = 0;
+	    up->pxinfo = (pxinfo_t *)NULL;
+	    up->peer = up->icons = (uxsin_t *)NULL;
+#endif	/* defined(HASEPTOPTS) && defined(HASUXSOCKEPT) */
+
 	    up->next = Uxsin[h];
 	    Uxsin[h] = up;
 	}
+
+#if	defined(HASEPTOPTS) && defined(HASUXSOCKEPT)
+/*
+ * If endpoint info has been requested, get UNIX socket peer info.
+ */
+	if (FeptE)
+	    get_uxpeeri();
+#endif	/* defined(HASEPTOPTS) && defined(HASUXSOCKEPT) */
+
 	(void) fclose(us);
 }
 
@@ -2715,7 +3151,7 @@ process_proc_sock(p, pbr, s, ss, l, lss)
 	struct sctpsin *sp;
 	static ssize_t sz;
 	struct tcp_udp *tp;
-	struct uxsin *up;
+	uxsin_t *up;
 
 #if	defined(HASIPv6)
 	int af;
@@ -3391,6 +3827,14 @@ process_proc_sock(p, pbr, s, ss, l, lss)
 		Lf->inode = (INODETYPE)s->st_ino;
 		Lf->inp_ty = 1;
 	    }
+
+#if	defined(HASEPTOPTS) && defined(HASUXSOCKEPT)
+	    if (FeptE) {
+		(void) enter_uxsinfo(up);
+		Lf->sf |= SELUXSINFO;
+	    }
+#endif	/* defined(HASEPTOPTS) && defined(HASUXSOCKEPT) */
+
 	    cp = sockty2str(up->ty, &rf);
 	    (void) snpf(Namech, Namechl - 1, "%s%stype=%s",
 		up->path ? up->path : "",

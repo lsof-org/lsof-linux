@@ -32,7 +32,7 @@
 #ifndef lint
 static char copyright[] =
 "@(#) Copyright 1997 Purdue Research Foundation.\nAll rights reserved.\n";
-static char *rcsid = "$Id: dnode.c,v 1.24 2014/10/13 22:25:58 abe Exp abe $";
+static char *rcsid = "$Id: dnode.c,v 1.25 2015/07/07 19:46:33 abe Exp $";
 #endif
 
 
@@ -84,11 +84,11 @@ _PROTOTYPE(static void enter_pinfo,(void));
 
 
 /*
- * Locals storage
+ * Local storage
  */
 
 #if	defined(HASEPTOPTS)
-static pinfo_t **Pinfo = (pinfo_t **)NULL;
+static pxinfo_t **Pinfo = (pxinfo_t **)NULL;
 #endif	/* defined(HASEPTOPTS) */
 
 
@@ -124,7 +124,7 @@ void
 clear_pinfo()
 {
 	int h;				/* hash index */
-	pinfo_t *pi, *pp;		/* temporary pointers */
+	pxinfo_t *pi, *pp;		/* temporary pointers */
 
 	if (!Pinfo)
 	    return;
@@ -135,7 +135,7 @@ clear_pinfo()
 		    (void) free((FREE_P *)pi);
 		    pi = pp;
 		} while (pi);
-		Pinfo[h] = (pinfo_t *)NULL;
+		Pinfo[h] = (pxinfo_t *)NULL;
 	    }
 	}
 }
@@ -154,13 +154,14 @@ enter_pinfo()
 	int h;				/* hash result */
 	struct lfile *lf;		/* local file structure pointer */
 	struct lproc *lp;		/* local proc structure pointer */
-	pinfo_t *np, *pi, *pe;		/* pipe info pointers */
+	pxinfo_t *np, *pi, *pe;		/* pipe info pointers */
 
 	if (!Pinfo) {
 	/*
 	 * Allocate pipe info hash buckets.
 	 */
-	    if (!(Pinfo = (pinfo_t **)calloc(PINFOBUCKS, sizeof(pinfo_t *)))) {
+	    if (!(Pinfo = (pxinfo_t **)calloc(PINFOBUCKS, sizeof(pxinfo_t *))))
+	    {
 		(void) fprintf(stderr,
 		    "%s: no space for %d pipe info buckets\n", Pn, PINFOBUCKS);
 		    Exit(1);
@@ -169,7 +170,7 @@ enter_pinfo()
     /*
      * Make sure this is a unique entry.
      */
-	for (h = HASHPINFO(Lf->inode), pi = Pinfo[h], pe = (pinfo_t *)NULL;
+	for (h = HASHPINFO(Lf->inode), pi = Pinfo[h], pe = (pxinfo_t *)NULL;
 	     pi;
 	     pe = pi, pi = pi->next
 	) {
@@ -184,7 +185,7 @@ enter_pinfo()
     * Allocate, fill and link a new pipe info structure to the end of
     * the pipe inode hash chain.
     */
-	if (!(np = (pinfo_t *)malloc(sizeof(pinfo_t)))) {
+	if (!(np = (pxinfo_t *)malloc(sizeof(pxinfo_t)))) {
 	    (void) fprintf(stderr,
 		"%s: no space for pipeinfo, PID %d, FD %s\n",
 		Pn, Lp->pid, Lf->fd);
@@ -193,7 +194,7 @@ enter_pinfo()
 	np->ino = Lf->inode;
 	np->lf = Lf;
 	np->lpx = Lp - Lproc;
-	np->next = (pinfo_t *)NULL;
+	np->next = (pxinfo_t *)NULL;
 	if (pe)
 	    pe->next = np;
 	else
@@ -205,14 +206,14 @@ enter_pinfo()
  * find_pendinfo() -- find pipe end info
  */
 
-pinfo_t *
+pxinfo_t *
 find_pendinfo(lf, pp)
 	struct lfile *lf;		/* pipe's lfile */
-	pinfo_t *pp;			/* previous pinfo (NULL == none) */
+	pxinfo_t *pp;			/* previous pipe info (NULL == none) */
 {
 	struct lfile *ef;		/* pipe end local file structure */
 	int h;				/* hash result */
-	pinfo_t *pi;			/* pipe info pointer */
+	pxinfo_t *pi;			/* pipe info pointer */
 
 	if (Pinfo) {
 	    if (pp)
@@ -230,7 +231,7 @@ find_pendinfo(lf, pp)
 		pi = pi->next;
 	    }
 	}
-	return((pinfo_t *)NULL);
+	return((pxinfo_t *)NULL);
 
 }
 #endif	/* defined(HASEPTOPTS) */

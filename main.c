@@ -34,7 +34,7 @@
 #ifndef lint
 static char copyright[] =
 "@(#) Copyright 1994 Purdue Research Foundation.\nAll rights reserved.\n";
-static char *rcsid = "$Id: main.c,v 1.56 2014/10/13 22:36:20 abe Exp abe $";
+static char *rcsid = "$Id: main.c,v 1.57 2015/07/07 20:16:58 abe Exp abe $";
 #endif
 
 
@@ -190,7 +190,7 @@ main(argc, argv)
 #endif	/* defined(HASKOPT) */
 
 #if	defined(HASTASKS)
-	    "K",
+	    "K:",
 #else	/* !defined(HASTASKS) */
 	    "",
 #endif	/* defined(HASTASKS) */
@@ -279,7 +279,7 @@ main(argc, argv)
 			    GOx2 = GObk[1];
 			}
 		    } else {
-			CmdLim = atoi(GOv);
+			CmdLim = TaskCmdLim = atoi(GOv);
 
 #if	defined(MAXSYSCMDL)
 			if (CmdLim > MAXSYSCMDL) {
@@ -458,6 +458,11 @@ main(argc, argv)
 			    continue;
 #endif	/* !defined(HASPPID) */
 
+#if	!defined(HASTASKS)
+			if (FieldSel[i].id == LSOF_FID_TCMD)
+			    continue;
+#endif	/* !defined(HASTASKS) */
+
 #if	!defined(HASFSTRUCT)
 			if (FieldSel[i].id == LSOF_FID_CT
 			||  FieldSel[i].id == LSOF_FID_FA
@@ -511,6 +516,11 @@ main(argc, argv)
 			if (FieldSel[i].id == LSOF_FID_PPID)
 			    continue;
 #endif	/* !defined(HASPPID) */
+
+#if	!defined(HASTASKS)
+			if (FieldSel[i].id == LSOF_FID_TCMD)
+			    continue;
+#endif	/* !defined(HASTASKS) */
 
 #if	!defined(HASFSTRUCT)
 			if (FieldSel[i].id == LSOF_FID_CT
@@ -591,10 +601,27 @@ main(argc, argv)
 #endif	/* defined(HASKOPT) */
 
 #if	defined(HASTASKS)
-		case 'K':
+	    case 'K':
+		if (!GOv || *GOv == '-' || *GOv == '+') {
 		    Ftask = 1;
+		    IgnTasks = 0;
 		    Selflags |= SELTASK;
-		    break;
+		    if (GOv) {
+			GOx1 = GObk[0];
+			GOx2 = GObk[1];
+		    }
+		} else {
+		    if (!strcasecmp(GOv, "i")) {
+			Ftask = 0;
+			IgnTasks = 1;
+			Selflags &= ~SELTASK;
+		   } else {
+			(void) fprintf(stderr,
+			    "%s: -K not followed by i (but by %s)\n", Pn, GOv);
+			err = 1;
+		   }
+		}
+		break;
 #endif	/* defined(HASTASKS) */
 
 	    case 'l':
@@ -982,6 +1009,11 @@ main(argc, argv)
 	    }
 	}
 /*
+ * If IgnTasks is set, remove SELTASK from SelAll and SelProc.
+ */
+	SelAll = IgnTasks ? (SELALL & ~SELTASK) : SELALL;
+	SelProc = IgnTasks ? (SELPROC & ~SELTASK) : SELPROC;
+/*
  * Check for argument consistency.
  */
 	if (Cmdnx && Cmdni) {
@@ -1159,12 +1191,12 @@ main(argc, argv)
 		    "%s: no select options to AND via -a\n", Pn);
 		usage(1, 0, 0);
 	    }
-	    Selflags = SELALL;
+	    Selflags = SelAll;
 	} else {
 	    if (GOx1 >= argc && (Selflags & (SELNA|SELNET)) != 0
 	    &&  (Selflags & ~(SELNA|SELNET)) == 0)
 		Selinet = 1;
-	    Selall = 0;
+	    AllProc = 0;
 	}
 /*
  * Get the device for DEVDEV_PATH.
@@ -1320,6 +1352,24 @@ main(argc, argv)
 			if (Lp->ept & EPT_PIPE_END)
 			    (void) process_pinfo(1);
 		    }
+
+# if	defined(HASUXSOCKEPT)
+		/*
+		 * Process UNIX socket endpoint files in a similar fashion.
+		 */
+		    for (i = 0; i < Nlproc; i++) {
+			Lp = (Nlproc > 1) ? slp[i] : &Lproc[i];
+			if (Lp->pss && (Lp->ept & EPT_UXS))
+			    (void) process_uxsinfo(0);
+		    }
+		    for (i = 0; i < Nlproc; i++) {
+			Lp = (Nlproc > 1) ? slp[i] : &Lproc[i];
+			if (Lp->ept & EPT_UXS_END) {
+			    (void) process_uxsinfo(1);
+			}
+		    }
+# endif	/* defined(HASUXSOCKEPT) */
+
 		    Lf = lf;
 		}
 #endif	/* defined(HASEPTOPTS) */
