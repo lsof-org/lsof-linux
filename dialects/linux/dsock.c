@@ -156,6 +156,7 @@ struct tcp_udp {			/* IPv4 TCP and UDP socket
 	struct tcp_udp *next;		/* in TcpUdp inode hash table */
 #if	defined(HASEPTOPTS)
 	struct tcp_udp *ipc_next;	/* in TcpUdp local ipc hash table */
+	struct tcp_udp *ipc_peer;	/* locally connected peer(s) info */
 #endif	/* defined(HASEPTOPTS) */
 };
 
@@ -276,6 +277,10 @@ _PROTOTYPE(static void get_uxpeeri,(void));
 _PROTOTYPE(static void parse_diag,(struct unix_diag_msg *dm, int len));
 _PROTOTYPE(static void prt_uxs,(uxsin_t *p, int mk));
 #endif	/* defined(HASEPTOPTS) && defined(HASUXSOCKEPT) */
+
+#if	defined(HASEPTOPTS)
+_PROTOTYPE(static void get_netpeeri,(void));
+#endif	/* defined(HASEPTOPTS) */
 
 _PROTOTYPE(static struct icmpin *check_icmp,(INODETYPE i));
 _PROTOTYPE(static struct ipxsin *check_ipx,(INODETYPE i));
@@ -1191,6 +1196,38 @@ process_uxsinfo(f)
 #endif	/* defined(HASEPTOPTS) && defined(HASUXSOCKEPT) */
  
  
+#if	defined(HASEPTOPTS)
+/*
+ * get_netpeeri() - get INET socket peer inode information
+ */
+
+static void
+get_netpeeri()
+{
+	int h, i0, i1;
+	struct tcp_udp *np, *tp;
+
+	for (h = 0; h < IPCBUCKS; h++) {
+	    for (tp = TcpUdpIPC[h]; tp; tp = tp->ipc_next) {
+		if (tp->ipc_peer)
+		    continue;
+		for (np = TcpUdpIPC[h]; np; np = np->ipc_next) {
+		    if (np->ipc_peer)
+			continue;
+		    if (tp->laddr == np->laddr &&
+			tp->fport == np->lport &&
+			tp->proto == np->proto) {
+			tp->ipc_peer = np;
+			np->ipc_peer = tp;
+			break;
+		    }
+		}
+	    }
+	}
+}
+#endif						\
+    /* defined(HASEPTOPTS) */
+
 /*
  * get_icmp() - get ICMP net info
  */
@@ -2407,14 +2444,26 @@ get_tcpudp(p, pr, clr)
 	    tp->next = TcpUdp[h];
 	    TcpUdp[h] = tp;
 #if	defined(HASEPTOPTS)
-	    if (FeptE && (tp->faddr == tp->laddr)) {
-		/* This is INET socket used for IPC in a host */
-		int i = TCPUDP_IPC_HASH(tp);
-		tp->ipc_next = TcpUdpIPC[i];
-		TcpUdpIPC[i] = tp->ipc_next;
+	    if (FeptE) {
+		tp->ipc_peer = (struct tcp_udp *)NULL;
+		if (tp->state == TCP_ESTABLISHED && tp->faddr == tp->laddr) {
+		    /* This is INET socket used for IPC in a host */
+		    int i = TCPUDP_IPC_HASH(tp);
+		    tp->ipc_next = TcpUdpIPC[i];
+		    TcpUdpIPC[i] = tp;
+		}
 	    }
 #endif	/* defined(HASEPTOPTS) */
 	}
+
+#if	defined(HASEPTOPTS)
+/*
+ * If endpoint info has been requested, link INET socket peer info.
+ */
+	if (FeptE)
+	    get_netpeeri();
+#endif	/* defined(HASEPTOPTS) && defined(HASUXSOCKEPT) */
+
 	(void) fclose(fs);
 }
 
