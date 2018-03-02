@@ -155,6 +155,7 @@ struct tcp_udp {			/* IPv4 TCP and UDP socket
 	int state;			/* protocol state */
 	struct tcp_udp *next;		/* in TcpUdp inode hash table */
 #if	defined(HASEPTOPTS)
+	pxinfo_t *pxinfo;		/* inode information */
 	struct tcp_udp *ipc_next;	/* in TcpUdp local ipc hash table */
 	struct tcp_udp *ipc_peer;	/* locally connected peer(s) info */
 #endif	/* defined(HASEPTOPTS) */
@@ -279,6 +280,7 @@ _PROTOTYPE(static void prt_uxs,(uxsin_t *p, int mk));
 #endif	/* defined(HASEPTOPTS) && defined(HASUXSOCKEPT) */
 
 #if	defined(HASEPTOPTS)
+_PROTOTYPE(static void enter_netsinfo,(struct tcp_udp *tp));
 _PROTOTYPE(static void get_netpeeri,(void));
 #endif	/* defined(HASEPTOPTS) */
 
@@ -1197,6 +1199,42 @@ process_uxsinfo(f)
  
  
 #if	defined(HASEPTOPTS)
+/*
+ * enter_netsinfo() -- enter inet socket info
+ * 	entry	Lf = local file structure pointer
+ * 		Lp = local process structure pointer
+ */
+
+static void
+enter_netsinfo (tp)
+	struct tcp_udp *tp;
+{
+	pxinfo_t *pi;			/* pxinfo_t structure pointer */
+	struct lfile *lf;		/* local file structure pointer */
+	struct lproc *lp;		/* local proc structure pointer */
+	pxinfo_t *np;			/* new pxinfo_t structure pointer */
+
+	for (pi = tp->pxinfo; pi; pi = pi->next) {
+	    lf = pi->lf;
+	    lp = &Lproc[pi->lpx];
+	    if (pi->ino == Lf->inode) {
+		if ((lp->pid == Lp->pid) && !strcmp(lf->fd, Lf->fd))
+		    return;
+	    }
+	}
+	if (!(np = (pxinfo_t *)malloc(sizeof(pxinfo_t)))) {
+	    (void) fprintf(stderr,
+			   "%s: no space for pipeinfo in netsinfo, PID %d\n",
+			   Pn, Lp->pid);
+	    Exit(1);
+	}
+	np->ino = Lf->inode;
+	np->lf = Lf;
+	np->lpx = Lp - Lproc;
+	np->next = tp->pxinfo;
+	tp->pxinfo = np;
+}
+
 /*
  * get_netpeeri() - get INET socket peer inode information
  */
@@ -2283,6 +2321,11 @@ get_tcpudp(p, pr, clr)
 	struct tcp_udp *np, *tp;
 	static char *vbuf = (char *)NULL;
 	static size_t vsz = (size_t)0;
+
+#if	defined(HASEPTOPTS)
+	pxinfo_t *pp, *pnp;
+#endif	/* defined(HASEPTOPTS) */
+
 /*
  * Delete previous table contents.
  */
@@ -2291,6 +2334,14 @@ get_tcpudp(p, pr, clr)
 		for (h = 0; h < TcpUdp_bucks; h++) {
 		    for (tp = TcpUdp[h]; tp; tp = np) {
 			np = tp->next;
+
+#if	defined(HASEPTOPTS)
+			for (pp = tp->pxinfo; pp; pp = pnp) {
+			    pnp = pp->next;
+			    (void) free((FREE_P *)pp);
+			}
+#endif	/* defined(HASEPTOPTS) */
+
 			(void) free((FREE_P *)tp);
 		    }
 		    TcpUdp[h] = (struct tcp_udp *)NULL;
@@ -2444,6 +2495,7 @@ get_tcpudp(p, pr, clr)
 	    tp->next = TcpUdp[h];
 	    TcpUdp[h] = tp;
 #if	defined(HASEPTOPTS)
+	    tp->pxinfo = (pxinfo_t *)NULL;
 	    if (FeptE) {
 		tp->ipc_peer = (struct tcp_udp *)NULL;
 		if (tp->state == TCP_ESTABLISHED && tp->faddr == tp->laddr) {
@@ -4295,6 +4347,13 @@ process_proc_sock(p, pbr, s, ss, l, lss)
 	    Lf->lts.sq = tp->txq;
 	    Lf->lts.rqs = Lf->lts.sqs = 1;
 #endif  /* defined(HASTCPTPIQ) */
+
+#if	defined(HASEPTOPTS)
+	    if (FeptE && tp->ipc_peer) {
+		(void) enter_netsinfo(tp);
+		Lf->sf |= SELNETSINFO;
+	    }
+#endif	/* defined(HASEPTOPTS) */
 
 	    return;
 	}
