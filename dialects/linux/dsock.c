@@ -66,6 +66,13 @@ static char *rcsid = "$Id: dsock.c,v 1.43 2018/03/26 21:52:29 abe Exp $";
 #define TCPUDPHASH(ino)	((int)((ino * 31415) >> 3) & (TcpUdp_bucks - 1))
 #define TCPUDP6HASH(ino) ((int)((ino * 31415) >> 3) & (TcpUdp6_bucks - 1))
 
+#define IPCBUCKS 128			/* IPC hash bucket count -- must be
+					 * a power of two */
+#define TCPUDP_IPC_HASH(tp) ((int)(((((tp)->faddr			\
+				      + (tp)->fport			\
+				      + (tp)->lport			\
+				      + (tp)->proto) * 31415) >> 3)	\
+				   & (IPCBUCKS - 1)))
 
 /*
  * Local structures
@@ -146,7 +153,10 @@ struct tcp_udp {			/* IPv4 TCP and UDP socket
 	unsigned long txq, rxq;		/* transmit & receive queue values */
 	int proto;			/* 0 = TCP, 1 = UDP, 2 = UDPLITE */
 	int state;			/* protocol state */
-	struct tcp_udp *next;
+	struct tcp_udp *next;		/* in TcpUdp inode hash table */
+#if	defined(HASEPTOPTS)
+	struct tcp_udp *ipc_next;	/* in TcpUdp local ipc hash table */
+#endif	/* defined(HASEPTOPTS) */
 };
 
 #if	defined(HASIPv6)
@@ -215,6 +225,12 @@ static struct tcp_udp **TcpUdp = (struct tcp_udp **)NULL;
 static int TcpUdp_bucks = 0;		/* dynamically sized hash bucket
 					 * count for TCP and UDP -- will
 					 * be a power of two */
+#if	defined(HASEPTOPTS)
+static struct tcp_udp **TcpUdpIPC = (struct tcp_udp **)NULL;
+					/* IPv4 TCP & UDP info for socket used
+					   for IPC, hashed by (addr, port paris
+					   and protocol */
+#endif	/* defined(HASEPTOPTS) */
 
 #if	defined(HASIPv6)
 static char *Raw6path = (char *)NULL;	/* path to raw IPv6 /proc information */
@@ -2242,6 +2258,11 @@ get_tcpudp(p, pr, clr)
 		    }
 		    TcpUdp[h] = (struct tcp_udp *)NULL;
 		}
+#if	defined(HASEPTOPTS)
+		if (FeptE)
+		    for (h = 0; h < IPCBUCKS; h++)
+			TcpUdpIPC[h] = (struct tcp_udp *)NULL;
+#endif	/* defined(HASEPTOPTS) */
 	    }
 /*
  * If no hash buckets have been allocated, do so now.
@@ -2277,6 +2298,14 @@ get_tcpudp(p, pr, clr)
 		    Pn, (int)(TcpUdp_bucks * sizeof(struct tcp_udp *)));
 		Exit(1);
 	    }
+#if	defined(HASEPTOPTS)
+	    if (FeptE && (!(TcpUdpIPC = (struct tcp_udp **)calloc(IPCBUCKS,
+								  sizeof(struct tcp_udp *))))) {
+		(void) fprintf(stderr,
+			       "%s: can't allocate %d bytes for TCP&UDP local IPC hash buckets\n",
+			       Pn, (int)(IPCBUCKS * sizeof(struct tcp_udp *)));
+	    }
+#endif	/* defined(HASEPTOPTS) */
 	}
 /*
  * Open the /proc/net file, assign a page size buffer to the stream, and
@@ -2377,6 +2406,14 @@ get_tcpudp(p, pr, clr)
 	    tp->state = (int)state;
 	    tp->next = TcpUdp[h];
 	    TcpUdp[h] = tp;
+#if	defined(HASEPTOPTS)
+	    if (FeptE && (tp->faddr == tp->laddr)) {
+		/* This is INET socket used for IPC in a host */
+		int i = TCPUDP_IPC_HASH(tp);
+		tp->ipc_next = TcpUdpIPC[i];
+		TcpUdpIPC[i] = tp->ipc_next;
+	    }
+#endif	/* defined(HASEPTOPTS) */
 	}
 	(void) fclose(fs);
 }
