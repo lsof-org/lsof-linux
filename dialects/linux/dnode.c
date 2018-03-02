@@ -32,11 +32,15 @@
 #ifndef lint
 static char copyright[] =
 "@(#) Copyright 1997 Purdue Research Foundation.\nAll rights reserved.\n";
-static char *rcsid = "$Id: dnode.c,v 1.25 2015/07/07 19:46:33 abe Exp $";
+static char *rcsid = "$Id: dnode.c,v 1.26 2018/02/14 14:26:38 abe Exp $";
 #endif
 
 
 #include "lsof.h"
+
+#if	defined(HASEPTOPTS) && defined(HASPTYEPT)
+#include <linux/major.h>
+#endif	/* defined(HASEPTOPTS) && defined(HASPTYEPT) */
 
 
 /*
@@ -88,7 +92,11 @@ _PROTOTYPE(static void enter_pinfo,(void));
  */
 
 #if	defined(HASEPTOPTS)
-static pxinfo_t **Pinfo = (pxinfo_t **)NULL;
+static pxinfo_t **Pinfo = (pxinfo_t **)NULL;	/* pipe endpoint hash buckets */
+# if	defined(HASPTYEPT)
+static pxinfo_t **PtyInfo = (pxinfo_t **)NULL;	/* pseudoterminal endpoint hash
+						 * buckets */
+# endif	/* defined(HASPTYEPT) */
 #endif	/* defined(HASEPTOPTS) */
 
 
@@ -202,12 +210,180 @@ enter_pinfo()
 }
 
 
+#if	defined(HASPTYEPT)
+
+
 /*
- * find_pendinfo() -- find pipe end info
+ * clear_ptyinfo() -- clear allocated pseudoterminal info
+ */
+
+void
+clear_ptyinfo()
+{
+	int h;				/* hash index */
+	pxinfo_t *pi, *pp;		/* temporary pointers */
+
+	if (!PtyInfo)
+	    return;
+	for (h = 0; h < PINFOBUCKS; h++) {
+	    if ((pi = PtyInfo[h])) {
+		do {
+		    pp = pi->next;
+		    (void) free((FREE_P *)pi);
+		    pi = pp;
+		} while (pi);
+		PtyInfo[h] = (pxinfo_t *)NULL;
+	    }
+	}
+}
+
+
+/*
+ * enter_ptmxi() -- enter pty info
+ *
+ * 	entry	Lf = local file structure pointer
+ * 		Lp = local process structure pointer
+ */
+
+void
+enter_ptmxi(mn)
+	int mn;				/* minor number of device */
+{
+	int h;				/* hash result */
+	struct lfile *lf;		/* local file structure pointer */
+	struct lproc *lp;		/* local proc structure pointer */
+	pxinfo_t *np, *pi, *pe;		/* inode hash pointers */
+
+	if (!PtyInfo) {
+
+	/*
+	 * Allocate pipe info hash buckets (but used for pty).
+	 */
+	    if (!(PtyInfo = (pxinfo_t **)calloc(PINFOBUCKS,
+			    sizeof(pxinfo_t *))))
+	    {
+		(void) fprintf(stderr,
+		    "%s: no space for %d pty info buckets\n", Pn, PINFOBUCKS);
+		    Exit(1);
+	    }
+	}
+    /*
+     * Make sure this is a unique entry.
+     */
+	for (h = HASHPINFO(mn), pi = PtyInfo[h], pe = (pxinfo_t *)NULL;
+	     pi;
+	     pe = pi, pi = pi->next
+	) {
+	    lf = pi->lf;
+	    lp = &Lproc[pi->lpx];
+	    if (pi->ino == mn) {
+		if ((lp->pid == Lp->pid) && !strcmp(lf->fd, Lf->fd))
+		    return;
+	    }
+	}
+   /*
+    * Allocate, fill and link a new pipe info structure used for pty
+    * to the end of the pty device hash chain.
+    */
+	if (!(np = (pxinfo_t *)malloc(sizeof(pxinfo_t)))) {
+	    (void) fprintf(stderr,
+		"%s: no space for pipeinfo for pty, PID %d, FD %s\n",
+		Pn, Lp->pid, Lf->fd);
+	    Exit(1);
+	}
+	np->ino = mn;
+	np->lf = Lf;
+	np->lpx = Lp - Lproc;
+	np->next = (pxinfo_t *)NULL;
+	if (pe)
+	    pe->next = np;
+	else
+	    PtyInfo[h] = np;
+}
+
+
+/*
+ * find_ptyepti() -- find pseudoterminal end point info
  */
 
 pxinfo_t *
-find_pendinfo(lf, pp)
+find_ptyepti(lf, m, pp)
+	struct lfile *lf;		/* pseudoterminal's lfile */
+	int m;				/* minor number type:
+					 *     0 == use tty_index
+					 *     1 == use minor device */
+	pxinfo_t *pp;			/* previous pseudoterminal info
+					 * (NULL == none) */
+{
+	struct lfile *ef;		/* pseudoterminal end local file */
+	int h;				/* hash result */
+	INODETYPE mn;			/* minor number */
+	pxinfo_t *pi;			/* pseudoterminal info pointer */
+
+
+	mn = m ? GET_MIN_DEV(lf->rdev) : lf->tty_index;
+	if (PtyInfo) {
+	    if (pp)
+		pi = pp;
+	    else {
+		h = HASHPINFO(mn);
+		pi = PtyInfo[h];
+	    }
+	    while (pi) {
+		if (pi->ino == mn) {
+		    ef = pi->lf;
+		    if (((m && is_pty_ptmx(ef->rdev))
+		    ||  ((!m) && is_pty_slave(GET_MAJ_DEV(ef->rdev))))
+		    &&   strcmp(lf->fd, ef->fd)
+		    ) {
+			return(pi);
+		    }
+		}
+		pi = pi->next;
+	     }
+	}
+	return((pxinfo_t *)NULL);
+}
+
+
+/*
+ * is_pty_slave() -- is a pseudoterminal a slave device
+ */
+
+int
+is_pty_slave(sm)
+	int sm;				/* slave major device number */
+{
+	if ((UNIX98_PTY_SLAVE_MAJOR <= sm)
+	&&  (sm < (UNIX98_PTY_SLAVE_MAJOR + UNIX98_PTY_SLAVE_MAJOR))
+	) {
+	    return 1;
+	}
+	return 0;
+}
+
+
+/*
+ * is_pty_ptmx() -- is a pseudoterminal a master clone device
+ */
+
+int
+is_pty_ptmx(dev)
+	dev_t dev;			/* device number */
+{
+	if ((GET_MAJ_DEV(dev) == TTYAUX_MAJOR) && (GET_MIN_DEV(dev) == 2))
+	    return 1;
+	return 0;
+}
+#endif	/* defined(HASPTYEPT) */
+
+
+/*
+ * find_pepti() -- find pipe end point info
+ */
+
+pxinfo_t *
+find_pepti(lf, pp)
 	struct lfile *lf;		/* pipe's lfile */
 	pxinfo_t *pp;			/* previous pipe info (NULL == none) */
 {
@@ -559,6 +735,16 @@ process_proc_node(p, pbr, s, ss, l, ls)
 	    if (ss & SB_RDEV) {
 		Lf->rdev = s->st_rdev;
 		Lf->rdev_def = 1;
+
+#if	defined(HASEPTOPTS) && defined(HASPTYEPT)
+		if ((Ntype == N_CHR)
+		&&  is_pty_slave(GET_MAJ_DEV(Lf->rdev))
+		) {
+		    enter_ptmxi(GET_MIN_DEV(Lf->rdev));
+		    Lf->sf |= SELPTYINFO;
+		}
+#endif	/* defined(HASEPTOPTS) && defined(HASPTYEPT) */
+
 	    }
 	}
 	if (Ntype == N_REGLR && (HasNFS == 2)) {

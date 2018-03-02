@@ -31,7 +31,7 @@
 
 
 /*
- * $Id: lsof.h,v 1.68 2015/07/07 20:16:58 abe Exp abe $
+ * $Id: lsof.h,v 1.69 2018/02/14 14:19:25 abe Exp $
  */
 
 
@@ -86,8 +86,12 @@ struct l_dev {
  */
 
 #define	CHEND_PIPE	1		/* pipe endpoint ID */
+#define	CHEND_PTY	4		/* pseudoterminal endpoint ID */
 #define	EPT_PIPE	1		/* process has pipe file */
 #define	EPT_PIPE_END	2		/* process has pipe end point file */
+#define	EPT_PTY		8		/* process has a pseudoterminal file */
+#define	EPT_PTY_END	16		/* process has a pseudoterminal end
+					 * point file */
 
 #  if	defined(HASUXSOCKEPT)
 #define	CHEND_UXS	2		/* UNIX socket endpoint ID */
@@ -495,7 +499,9 @@ extern int ZoneColW;
 #define	SELTASK		0x4000		/* select tasks (-K) */
 #define	SELPINFO	0x8000		/* selected for pipe info (cleared in
 					 * link_lfile() */
-#define	SELUXSINFO	0x10000		/* selected for UNIX socket info
+#define	SELUXSINFO	0x10000		/* selected for UNIX socket info;
+					 * cleared in link_lfile() */
+#define	SELPTYINFO	0x20000		/* selected for pseudoterminal info;
 					 * cleared in link_lfile() */
 #define	SELALL		(SELCMD|SELCNTX|SELFD|SELNA|SELNET|SELNM|SELNFS|SELPID|SELUID|SELUNX|SELZONE|SELTASK)
 #define	SELPROC		(SELCMD|SELCNTX|SELPGID|SELPID|SELUID|SELZONE|SELTASK)
@@ -575,8 +581,8 @@ struct pff_tab {			/* print file flags table structure */
 # endif	/* defined(HASFSTRUCT) */
 
 # if	defined(HASEPTOPTS)
-typedef struct pxinfo {			/* hashed pipe or UNIX socket inode
-					 * information */
+typedef struct pxinfo {			/* hashed pipe, UNIX socket or pseudo-
+					 * terminal inode information */
 	INODETYPE ino;			/* file's inode */
 	struct lfile *lf;		/* connected peer file */
 	int lpx;			/* connected process index */
@@ -771,6 +777,10 @@ struct lfile {
 # if	defined(HASEPTOPTS)
 	unsigned char chend;		/* communication channel endpoint
 					 * file */
+#  if	defined(HASPTYEPT)
+	int tty_index;			/* pseudoterminal index of slave side
+					 * (if this is the master side) */
+#  endif	/* defined(HASPTYEPT) */
 # endif	/* defined(HASEPTOPTS) */
 
 	unsigned char rdev_def;		/* rdev definition status */

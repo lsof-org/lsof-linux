@@ -14,7 +14,7 @@
 # shell script, named $LSOF_MK, that places its source modules in this
 # directory.
 #
-# $Id: Configure,v 1.164 2015/07/07 20:16:58 abe Exp abe $
+# $Id: Configure,v 1.165 2018/02/14 14:18:48 abe Exp $
 
 # LSOF_CFLAGS_OVERRIDE=1 may be introduced through the environment to cause
 #	the library Makefile's CFLAGS definition to override any in the
@@ -1711,6 +1711,22 @@ kernel generation process.
       fi	# }
     fi	# }
 
+    # Check the C library for closefrom and dup2.
+
+      if test -r /usr/lib/libc.a	# {
+      then
+	nm /usr/lib/libc.a | grep -q "W dup2"
+	if test $? -eq 0	# {
+	then
+	  LSOF_CFGF="$LSOF_CFGF -DHAS_DUP2"
+	fi	# }
+	nm /usr/lib/libc.a | grep -q "W closefrom"
+	if test $? -eq 0	# {
+	then
+	  LSOF_CFGF="$LSOF_CFGF -DHAS_CLOSEFROM"
+	fi	# }
+      fi	# }
+
     # Do FreeBSD version-specific stuff.
 
     case $LSOF_VERS in	# {
@@ -1890,12 +1906,30 @@ cpumask_t c;
 
 	# Do FreeBSD 6.0 and higher version-specific stuff.
 
+	  if test -r ${LSOF_INCLUDE}/sys/_types.h	# {
+	  then
+	    grep __dev_t ${LSOF_INCLUDE}/sys/_types.h | grep -q 64
+	    if test $? -eq 0	# {
+	    then
+	      if test "X$LSOF_TSTDFLG" = "X"	# {
+	      then
+		LSOF_TSTDFLG="-DLT_DEV64"
+	      else
+		LSOF_TSTDFLG="$LSOF_TSTDFLG -DLT_DEV64"
+	      fi	# }
+	    fi	# }
+	  fi	# }
 	  if test -r ${LSOF_INCLUDE}/ufs/ufs/inode.h	# {
 	  then
 	    grep -q i_din2 ${LSOF_INCLUDE}/ufs/ufs/inode.h
 	    if test $? -eq 0	# {
 	    then
 	      LSOF_CFGF="$LSOF_CFGF -DHAS_UFS1_2"
+	    fi	# }
+	    grep -q i_dev ${LSOF_INCLUDE}/ufs/ufs/inode.h
+	    if test $? -ne 0	# {
+	    then
+	      LSOF_CFGF="$LSOF_CFGF -DHAS_NO_IDEV"
 	    fi	# }
 	  fi	# }
 	  if test -r ${LSOF_INCLUDE}/sys/conf.h	# {
@@ -2953,6 +2987,17 @@ return(0); }
     if test -r ${LSOF_INCLUDE}/linux/sock_diag.h -a -r ${LSOF_INCLUDE}/linux/unix_diag.h  # {
     then
       LSOF_CFGF="$LSOF_CFGF -DHASUXSOCKEPT"
+    fi	# }
+
+  # Test for pseudoterminal endpoint support.
+
+    if test -r ${LSOF_INCLUDE}/linux/major.h # {
+    then
+      grep -q TTYAUX_MAJOR ${LSOF_INCLUDE}/linux/major.h
+      if test $? -eq 0	# {
+      then
+	LSOF_CFGF="$LSOF_CFGF -DHASPTYEPT"
+      fi	# }
     fi	# }
     LSOF_DIALECT_DIR="linux"
     LSOF_CFGF="$LSOF_CFGF -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
@@ -4885,6 +4930,14 @@ return(0); }
 	  if test $? -eq 0	# {
 	  then
 	    LSOF_CFGF="$LSOF_CFGF -DHAS_PC_DIRENTPERSEC"
+	  fi	# }
+	fi	# }
+	if test -r ${LSOF_INCLUDE}/sys/aio_req.h	# {
+	then
+	  grep "struct[ 	]aio_req" ${LSOF_INCLUDE}/sys/aio_req.h > /dev/null 2>&1
+	  if test $? -eq 0	# {
+	  then
+	    LSOF_CFGF="$LSOF_CFGF -DHAS_AIO_REQ_STRUCT"
 	  fi	# }
 	fi	# }
       fi	# }

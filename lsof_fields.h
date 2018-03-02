@@ -32,7 +32,7 @@
 
 
 /*
- * $Id: lsof_fields.h,v 1.13 2014/10/13 22:36:20 abe Exp abe $
+ * $Id: lsof_fields.h,v 1.14 2018/02/14 14:19:25 abe Exp $
  */
 
 

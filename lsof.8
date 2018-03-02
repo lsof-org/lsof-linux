@@ -644,13 +644,13 @@ option.)
 .TP \w'names'u+4
 .B +|-E
 .B +E
-specifies that Linux pipe and Linux UNIX socket files should be displayed with
-endpoint information and the files of the endpoints should also be
-displayed.
-Note: UNIX socket file endpoint information is available only when the
+specifies that Linux pipe, Linux UNIX socket and Linux pseudoterminal files
+should be displayed with endpoint information and the files of the endpoints should also be displayed.
+Note: UNIX socket file endpoint information is only available when the
 compile flags line of
 .B \-v
-output contains HASUXSOCKEPT.
+output contains HASUXSOCKEPT, and psudoterminal endpoint information is only
+available when the compile flags line contains HASPTYEPT.
 .IP
 Pipe endpoint information is displayed in the NAME column in the
 form ``\fIPID,cmd,FDmode\fP'', where
@@ -663,6 +663,21 @@ is the endpoint file's descriptor; and
 .I mode
 is the endpoint file's access mode.
 .IP
+Pseudoterminal
+endpoint information is displayed in the NAME column as
+``->/dev/pts\fImin\fP\ \fIPID,cmd,FDmode\fP'' or ``\fIPID,cmd,FDmode\fP''.
+The first form is for a master device; the second, for a slave device.
+.I min
+is a slave device's minor device number; and
+.I "PID, cmd, FD"
+and
+.I mode
+are the same as with pipe endpoint information.
+Note: psudoterminal endpoint information is only available when the compile
+flags line of
+.B \-V
+output contains HASPTYEPT.
+.IP
 UNIX socket file endpoint information is displayed in the NAME column
 in the form
 .br
@@ -672,7 +687,7 @@ is the socket type;
 .I INODE
 is the i-node number of the connected socket;
 and
-.I "PID, cmd, FD,"
+.I "PID, cmd, FD"
 and
 .I mode
 are the same as with pipe endpoint information.
@@ -1447,6 +1462,10 @@ a colon (`:') and a comma\-separated protocol state name list,
 the option causes open TCP and UDP files to be excluded if their
 state name(s) are in the list (\fIs\fP) preceded by a `^'; or
 included if their name(s) are not preceded by a `^'.
+.IP
+Dialects that support this option may support only one protocol.
+When an unsupported protocol is specified, a message will be
+displayed indicating state names for the protocol are unavailable.
 .IP
 When an inclusion list is defined, only network files with state
 names in the list will be present in the

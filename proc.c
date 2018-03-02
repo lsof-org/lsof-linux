@@ -32,11 +32,15 @@
 #ifndef lint
 static char copyright[] =
 "@(#) Copyright 1994 Purdue Research Foundation.\nAll rights reserved.\n";
-static char *rcsid = "$Id: proc.c,v 1.49 2015/07/07 20:16:58 abe Exp abe $";
+static char *rcsid = "$Id: proc.c,v 1.50 2018/02/14 14:20:14 abe Exp $";
 #endif
 
 
 #include "lsof.h"
+
+#if	defined(HASPTYEPT)
+_PROTOTYPE(static void prt_ptyinfo,(pxinfo_t *pp, int prt_edev, int ps));
+#endif	/* defined(HASPTYEPT) */
 
 
 /*
@@ -918,6 +922,18 @@ link_lfile()
 	    }
 # endif	/* defined(HASUXSOCKEPT) */
 
+# if	defined(HASPTYEPT)
+/*
+ * Process pseudoterminal endpoint files the same way by clearing the SELPINFO
+ * flag and setting the EPT_PTY flag, letting a later call to process_ptyinfo()
+ * set selection flags.
+ */
+	    if (Lf->sf & SELPTYINFO) {
+		Lp->ept |= EPT_PTY;
+		Lf->sf &= ~SELPTYINFO;
+	    }
+# endif	/* defined(HASPTYEPT) */
+
 	}
 #endif	/* defined(HASEPTOPTS) */
 
@@ -976,7 +992,7 @@ process_pinfo(f)
 		 * its being a pipe.  Look up the pipe's endpoints.
 		 */
 		    do {
-			if ((pp = find_pendinfo(Lf, pp))) {
+			if ((pp = find_pepti(Lf, pp))) {
 
 			/*
 			 * This pipe endpoint is linked to the selected pipe
@@ -1017,7 +1033,7 @@ process_pinfo(f)
 		    Lf->sf = Selflags;
 		    Lp->pss |= PS_SEC;
 		    do {
-			if ((pp = find_pendinfo(Lf, pp))) {
+			if ((pp = find_pepti(Lf, pp))) {
 			    ep = &Lproc[pp->lpx];
 			    ef = pp->lf;
 			    for (i = 0; i < (FDLEN - 1); i++) {
@@ -1382,3 +1398,131 @@ print_proc()
 	}
 	return(rv);
 }
+
+
+#if	defined(HASPTYEPT)
+/*
+ * process_ptyinfo() -- process pseudoterminal info, adding it to selected files and
+ *		      selecting pseudoterminal end files (if requested)
+ */
+
+void
+process_ptyinfo(f)
+	int f;				/* function:
+					 *  0 == process selected pseudoterminal
+					 *  1 == process end point */
+{
+	pxinfo_t *pp;			/* previous pseudoterminal info */
+	int mos;			/* master or slave indicator
+					 *     0 == slave; 1 == master */
+	int pc;				/* print count */
+
+	if (!FeptE)
+	    return;
+	for (Lf = Lp->file; Lf; Lf = Lf->next) {
+	    if (Lf->rdev_def && is_pty_ptmx(Lf->rdev))
+		mos = 1;
+	    else if (Lf->rdev_def && is_pty_slave(GET_MAJ_DEV(Lf->rdev)))
+		mos = 0;
+	    else
+		continue;
+
+	    pp = (pxinfo_t *)NULL;
+	    switch(f) {
+	    case 0:
+
+	    /*
+	     * Process already selected pseudoterminal file.
+	     */
+		if (is_file_sel(Lp, Lf)) {
+
+		/*
+		 * This file has been selected by some criterion other than
+		 * its being a pseudoterminal.  Look up the pseudoterminal's
+		 * endpoints.
+		 */
+		    pc = 1;
+		    do {
+			if ((pp = find_ptyepti(Lf, !mos, pp))) {
+
+			/*
+			 * This pseudoterminal endpoint is linked to the
+			 * selected pseudoterminal file.  Add its PID, FD and
+			 * access mode to the name column addition.
+			 */
+			    prt_ptyinfo(pp, (mos && pc), (FeptE == 2));
+			    pp = pp->next;
+			    pc = 0;
+			}
+		    } while (pp);
+		}
+		break;
+	    case 1:
+		if (!is_file_sel(Lp, Lf) && (Lf->chend & CHEND_PTY)) {
+
+		/*
+		 * This is an unselected end point file.  Select it and add
+		 * its end point information to its name column addition.
+		 */
+		    Lf->sf = Selflags;
+		    Lp->pss |= PS_SEC;
+		    pc = 1;
+		    do {
+			if ((pp = find_ptyepti(Lf, !mos, pp))) {
+			    prt_ptyinfo(pp, (mos && pc), 0);
+			    pp = pp->next;
+			    pc = 0;
+			}
+		    } while (pp);
+		}
+		break;
+	    }
+	}
+}
+
+
+/*
+ * prt_ptyinfo() -- print pseudoterminal information
+ */
+
+static void
+prt_ptyinfo(pp, prt_edev, ps)
+	pxinfo_t *pp;			/* peer info */
+	int prt_edev;			/* print the end point device file */
+	int ps;				/* processing status:
+					 *    0 == process immediately
+					 *    1 == process later */
+{
+	struct lproc *ep;		/* pseudoterminal endpoint process */
+	struct lfile *ef;		/* pseudoterminal endpoint file */
+	int i;				/* temporary index */
+	char nma[1024];			/* name addition buffer */
+
+	ep = &Lproc[pp->lpx];
+	ef = pp->lf;
+	for (i = 0; i < (FDLEN - 1); i++) {
+	    if (ef->fd[i] != ' ')
+		break;
+	}
+	if (prt_edev) {
+	    (void) snpf(nma, sizeof(nma) - 1, "->/dev/pts/%d %d,%.*s,%s%c",
+			Lf->tty_index,
+			ep->pid, CmdLim, ep->cmd, &ef->fd[i],
+			ef->access);
+	} else {
+	    (void) snpf(nma, sizeof(nma) - 1, "%d,%.*s,%s%c",
+			ep->pid, CmdLim, ep->cmd, &ef->fd[i],
+			ef->access);
+	}
+	(void) add_nma(nma, strlen(nma));
+	if (ps) {
+
+	/*
+	 * Endpoint files have been selected, so mark this
+	 * one for selection later. Set the type to PTY.
+	 */
+	    ef->chend = CHEND_PTY;
+	    ep->ept |= EPT_PTY_END;
+	}
+}
+#endif	/* defined(HASPTYEPT) */

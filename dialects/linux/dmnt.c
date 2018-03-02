@@ -32,7 +32,7 @@
 #ifndef	lint
 static char copyright[] =
 "@(#) Copyright 1997 Purdue Research Foundation.\nAll rights reserved.\n";
-static char *rcsid = "$Id: dmnt.c,v 1.20 2015/07/07 19:47:31 abe Exp $";
+static char *rcsid = "$Id: dmnt.c,v 1.21 2018/02/14 14:26:38 abe Exp $";
 #endif
 
 
@@ -535,6 +535,8 @@ readmnt()
 		if ((nfs = strcasecmp(fp[2], "nfs3")))
 		    nfs = strcasecmp(fp[2], "nfs4");
 	    }
+	    if (!nfs && !HasNFS)
+		HasNFS = 1;
 	    if (mp) {
 
 	    /*

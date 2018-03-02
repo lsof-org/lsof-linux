@@ -32,7 +32,7 @@
 #ifndef lint
 static char copyright[] =
 "@(#) Copyright 1997 Purdue Research Foundation.\nAll rights reserved.\n";
-static char *rcsid = "$Id: dproc.c,v 1.29 2015/07/07 19:46:33 abe Exp abe $";
+static char *rcsid = "$Id: dproc.c,v 1.30 2018/02/14 14:26:38 abe Exp $";
 #endif
 
 #include "lsof.h"
@@ -44,7 +44,17 @@ static char *rcsid = "$Id: dproc.c,v 1.29 2015/07/07 19:46:33 abe Exp abe $";
 
 #define	FDINFO_FLAGS		1	/* fdinfo flags available */
 #define	FDINFO_POS		2	/* fdinfo position available */
-#define FDINFO_ALL		(FDINFO_FLAGS | FDINFO_POS)
+
+#if	defined(HASEPTOPTS) && defined(HASPTYEPT)
+#define FDINFO_TTY_INDEX	4	/* fdinfo tty-index available */
+#endif	/* defined(HASEPTOPTS) && defined(HASPTYEPT) */
+
+#if	defined(HASEPTOPTS) && defined(HASPTYEPT)
+#define FDINFO_ALL		(FDINFO_FLAGS | FDINFO_POS | FDINFO_TTY_INDEX)
+#else   /* !(defined(HASEPTOPTS) && defined(HASPTYEPT)) */
+#define FDINFO_ALL		(FDINFO_FLAGS | FDINFO_POS )
+#endif	/* defined(HASEPTOPTS) && defined(HASPTYEPT) */
+
 #define	LSTAT_TEST_FILE		"/"
 #define LSTAT_TEST_SEEK		1
 
@@ -60,6 +70,11 @@ static char *rcsid = "$Id: dproc.c,v 1.29 2015/07/07 19:46:33 abe Exp abe $";
 struct l_fdinfo {
 	int flags;			/* flags: line value */
 	off_t pos;			/* pos: line value */
+
+#if	defined(HASEPTOPTS) && defined(HASPTYEPT)
+	int tty_index;			/* pty line index */
+#endif	/* defined(HASEPTOPTS) && defined(HASPTYEPT) */
+
 };
 
 
@@ -81,7 +96,7 @@ static short Ckscko;			/* socket file only checking status:
  */
 
 _PROTOTYPE(static MALLOC_S alloc_cbf,(MALLOC_S len, char **cbf, MALLOC_S cbfa));
-_PROTOTYPE(static int get_fdinfo,(char *p, struct l_fdinfo *fi));
+_PROTOTYPE(static int get_fdinfo,(char *p, int msk, struct l_fdinfo *fi));
 _PROTOTYPE(static int getlinksrc,(char *ln, char *src, int srcl, char **rest));
 _PROTOTYPE(static int isefsys,(char *path, char *type, int l,
 			       efsys_list_t **rep, struct lfile **lfr));
@@ -412,8 +427,10 @@ gather_proc_info()
  */
 
 static int
-get_fdinfo(p, fi)
+get_fdinfo(p, msk, fi)
 	char *p;			/* path to fdinfo file */
+	int msk;			/* mask for information type: e.g.,
+					 * the FDINFO_* definition */
 	struct l_fdinfo *fi;		/* pointer to local fdinfo values
 					 * return structure */
 {
@@ -428,6 +445,11 @@ get_fdinfo(p, fi)
  */
 	if (!fi)
 	    return(0);
+
+#if	defined(HASEPTOPTS) && defined(HASPTYEPT)
+	fi->tty_index = -1;
+#endif	/* defined(HASEPTOPTS) && defined(HASPTYEPT) */
+
 	if (!p || !*p || !(fs = fopen(p, "r")))
 	    return(0);
 /*
@@ -448,7 +470,7 @@ get_fdinfo(p, fi)
 		||  !ep || *ep)
 		    continue;
 		fi->flags = (unsigned int)ul;
-		if ((rv |= FDINFO_FLAGS) == FDINFO_ALL)
+		if ((rv |= FDINFO_FLAGS) == msk)
 		    break;
 	    } else if (!strcmp(fp[0], "pos:")) {
 
@@ -462,6 +484,29 @@ get_fdinfo(p, fi)
 		fi->pos = (off_t)ull;
 		if ((rv |= FDINFO_POS) == FDINFO_ALL)
 		    break;
+
+#if	defined(HASEPTOPTS) && defined(HASPTYEPT)
+	    } else if (!strcmp(fp[0], "tty-index:")) {
+
+	    /*
+	     * Process a "tty-index:" line.
+	     */
+		ep = (char *)NULL;
+		if ((ul = strtoul(fp[1], &ep, 0)) == ULONG_MAX
+		||  !ep || *ep)
+		     continue;
+		fi->tty_index = (int)ul;
+		if (fi->tty_index < 0) {
+
+		/*
+		 * Oops! If integer overflow occurred, reset the field.
+		 */
+		     fi->tty_index = -1;
+		}
+		if ((rv |= FDINFO_TTY_INDEX) == msk)
+ 		    break;
+#endif	/* defined(HASEPTOPTS) && defined(HASPTYEPT) */
+
 	    }
 	}
 	fclose(fs);
@@ -548,7 +593,7 @@ initialize()
 	    if (!OffType) {
 		(void) snpf(path, sizeof(path), "%s/%d/fdinfo/%d", PROCFS,
 			    Mypid, fd);
-		if (get_fdinfo(path, &fi) & FDINFO_POS) {
+		if (get_fdinfo(path, FDINFO_POS, &fi) & FDINFO_POS) {
 		    if (fi.pos == (off_t)LSTAT_TEST_SEEK)
 			OffType = 2;
 		}
@@ -822,7 +867,7 @@ process_id(idp, idpl, cmd, uid, pid, ppid, pgid, tid, tcmd)
 	int tid;			/* task ID, if non-zero */
 	char *tcmd;			/* task command, if non-NULL) */
 {
-	int av;
+	int av = 0;
 	static char *dpath = (char *)NULL;
 	static int dpathl = 0;
 	short efs, enls, enss, lnk, oty, pn, pss, sf;
@@ -1180,7 +1225,7 @@ process_id(idp, idpl, cmd, uid, pid, ppid, pgid, tid, tcmd)
 		if (oty) {
 		    (void) make_proc_path(ipath, j, &pathi, &pathil,
 					  fp->d_name);
-		    if ((av = get_fdinfo(pathi, &fi)) & FDINFO_POS) {
+		    if ((av = get_fdinfo(pathi,FDINFO_ALL,&fi)) & FDINFO_POS) {
 			if (efs) {
 			    if (Foffset) {
 				lfr->off = (SZOFFTYPE)fi.pos;
@@ -1211,6 +1256,18 @@ process_id(idp, idpl, cmd, uid, pid, ppid, pgid, tid, tcmd)
 				      ls);
 		    if ((Lf->ntype == N_ANON_INODE) && rest && *rest)
 			enter_nm(rest);
+
+#if	defined(HASEPTOPTS) && defined(HASPTYEPT)
+		    else if (Lf->rdev_def
+			 &&  is_pty_ptmx(Lf->rdev)
+			 &&  (av & FDINFO_TTY_INDEX)
+		    ) {
+			    enter_ptmxi(fi.tty_index);
+			    Lf->tty_index = fi.tty_index;
+			    Lf->sf |= SELPTYINFO;
+		    }
+#endif	/* defined(HASEPTOPTS) && defined(HASPTYEPT) */
+
 		    if (Lf->sf)
 			link_lfile();
 		}
@@ -1465,7 +1522,7 @@ read_id_stat(p, id, cmd, ppid, pgid)
 					 * type */
 {
 	char buf[MAXPATHLEN], *cp, *cp1, **fp;
-	int ch, cx, es, nf;
+	int ch, cx, es, nf, pc;
 	static char *cbf = (char *)NULL;
 	static MALLOC_S cbfa = 0;
 	FILE *fs;
@@ -1505,11 +1562,14 @@ read_id_stat_exit:
 	if (!cp || (*cp != '('))
 	    goto read_id_stat_exit;
 	cp++;
+	pc = 1;			/* start the parenthesis balance count at 1 */
 /*
  * Enter the command characters safely.  Supply them from the initial read
  * of the stat file line, a '\n' if the initial read didn't yield a ')'
  * command closure, or by reading the rest of the command a character at
- * a time from the stat file.
+ * a time from the stat file.  Count embedded '(' characters and balance
+ * them with embedded ')' characters.  The opening '(' starts the balance
+ * count at one.
  */
 	for (cx = es = 0;;) {
 	    if (!es)
@@ -1518,8 +1578,18 @@ read_id_stat_exit:
 		if ((ch = fgetc(fs)) == EOF)
 		    goto read_id_stat_exit;
 	    }
-	    if (ch == ')')		/* ')' closes the command */
-		break;
+	    if (ch == '(')		/* a '(' advances the balance count */
+		pc++;
+	    if (ch == ')') {
+	    
+	    /*
+	     * Balance parentheses when a closure is encountered.  When
+	     * they are balanced, this is the end of the command.
+	     */
+		pc--;
+		if (!pc)
+		    break;
+	    }
 	    if ((cx + 2) > cbfa)
 		cbfa = alloc_cbf((cx + 2), &cbf, cbfa);
 	    cbf[cx] = ch;

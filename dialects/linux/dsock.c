@@ -32,7 +32,7 @@
 #ifndef lint
 static char copyright[] =
 "@(#) Copyright 1997 Purdue Research Foundation.\nAll rights reserved.\n";
-static char *rcsid = "$Id: dsock.c,v 1.41 2015/07/07 19:46:33 abe Exp $";
+static char *rcsid = "$Id: dsock.c,v 1.42 2018/02/14 14:26:38 abe Exp $";
 #endif
 
 
@@ -568,6 +568,31 @@ check_unix(i)
 		return(up);
 	}
 	return((uxsin_t *)NULL);
+}
+
+
+/*
+ * clear_uxsinfo -- clear allocated UNIX socket info
+ */
+
+void
+clear_uxsinfo()
+{
+	int h;				/* hash index */
+	uxsin_t *ui, *up;		/* remporary pointers */
+
+	if (!Uxsin)
+	    return;
+	for (h = 0; h < INOBUCKS; h++) {
+	    if ((ui = Uxsin[h])) {
+		do {
+		    up = ui->next;
+		    (void) free((FREE_P *)ui);
+		    ui = up;
+		} while (ui);
+		Uxsin[h] = (uxsin_t *)NULL;
+	    }
+	}
 }
 
 

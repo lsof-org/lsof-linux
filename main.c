@@ -34,7 +34,7 @@
 #ifndef lint
 static char copyright[] =
 "@(#) Copyright 1994 Purdue Research Foundation.\nAll rights reserved.\n";
-static char *rcsid = "$Id: main.c,v 1.57 2015/07/07 20:16:58 abe Exp abe $";
+static char *rcsid = "$Id: main.c,v 1.58 2018/02/14 14:20:14 abe Exp $";
 #endif
 
 
@@ -120,10 +120,17 @@ main(argc, argv)
  *
  * Make sure umask allows lsof to define its own file permissions.
  */
+
 	if ((MaxFd = (int) GET_MAX_FD()) < 53)
 	    MaxFd = 53;
+
+#if	defined(HAS_CLOSEFROM)
+	(void) closefrom(3);
+#else	/* !defined(HAS_CLOSEFROM) */
 	for (i = 3; i < MaxFd; i++)
 	    (void) close(i);
+#endif	/* !defined(HAS_CLOSEFROM) */
+
 	while (((i = open("/dev/null", O_RDWR, 0)) >= 0) && (i < 2))
 	    ;
 	if (i < 0)
@@ -1329,47 +1336,76 @@ main(argc, argv)
 	     * printing.
 	     *
 	     * Lf contents must be preserved, since they may point to a
-	     * malloc()'d area, and since Lf is used throughout the print
+	     * malloc()'d area, and since Lf is used throughout the printing
+	     * of the selected processes.
 	     */
 		if (FeptE) {
 		    lf = Lf;
-
 		/*
-		 * Check the files that have been selected for printing by
-		 * by some selection criterion other than being a pipe.
+		 * Scan all selected processes.
 		 */
 		    for (i = 0; i < Nlproc; i++) {
 			Lp = (Nlproc > 1) ? slp[i] : &Lproc[i];
-			if (Lp->pss && (Lp->ept & EPT_PIPE))
-			    (void) process_pinfo(0);
+
+			/*
+			 * For processes that have been selected for printing
+			 * and have files that are the end point(s) of pipe(s),
+			 * process the file endpoints.
+			 */
+			    if (Lp->pss && (Lp->ept & EPT_PIPE))
+				(void) process_pinfo(0);
+
+# if	defined(HASUXSOCKEPT)
+			/*
+			 * For processes that have been selected for printing
+			 * and have files that are the end point(s) of UNIX
+			 * socket(s), process the file endpoints.
+			 */
+			    if (Lp->pss && (Lp->ept & EPT_UXS))
+				(void) process_uxsinfo(0);
+# endif	/* defined(HASUXSOCKEPT) */
+
+# if	defined(HASPTYEPT)
+			/*
+			 * For processes that have been selected for printing
+			 * and have files that are the end point(s) of pseudo-
+			 * terminal files(s), process the file endpoints.
+			 */
+			    if (Lp->pss && (Lp->ept & EPT_PTY))
+				(void) process_ptyinfo(0);
+# endif	/* defined(HASPTYEPT) */
+
 		    }
 		/*
-		 * In a second pass, process unselected endpoint files,
+		 * In a second pass, look for unselected endpoint files,
 		 * possibly selecting them for printing.
 		 */
 		    for (i = 0; i < Nlproc; i++) {
 			Lp = (Nlproc > 1) ? slp[i] : &Lproc[i];
-			if (Lp->ept & EPT_PIPE_END)
-			    (void) process_pinfo(1);
-		    }
+
+			/*
+			 * Process pipe endpoints.
+			 */
+			    if (Lp->ept & EPT_PIPE_END)
+				(void) process_pinfo(1);
 
 # if	defined(HASUXSOCKEPT)
-		/*
-		 * Process UNIX socket endpoint files in a similar fashion.
-		 */
-		    for (i = 0; i < Nlproc; i++) {
-			Lp = (Nlproc > 1) ? slp[i] : &Lproc[i];
-			if (Lp->pss && (Lp->ept & EPT_UXS))
-			    (void) process_uxsinfo(0);
-		    }
-		    for (i = 0; i < Nlproc; i++) {
-			Lp = (Nlproc > 1) ? slp[i] : &Lproc[i];
-			if (Lp->ept & EPT_UXS_END) {
-			    (void) process_uxsinfo(1);
-			}
-		    }
+			/*
+			 * Process UNIX socket endpoints.
+			 */
+			    if (Lp->ept & EPT_UXS_END)
+				(void) process_uxsinfo(1);
 # endif	/* defined(HASUXSOCKEPT) */
 
+# if	defined(HASPTYEPT)
+			/*
+			 * Process pseudo-terminal endpoints.
+			 */
+			    if (Lp->ept & EPT_PTY_END)
+				(void) process_ptyinfo(1);
+# endif	/* defined(HASPTYEPT) */
+
+		    }
 		    Lf = lf;
 		}
 #endif	/* defined(HASEPTOPTS) */
@@ -1403,6 +1439,14 @@ main(argc, argv)
 
 #if	defined(HASEPTOPTS)
 		(void) clear_pinfo();
+
+# if	defined(HASUXSOCKEPT)
+		(void) clear_uxsinfo();
+# endif	/* defined(HASUXSOCKEPT) */
+
+# if	defined(HASEPTOPTS)
+		(void) clear_ptyinfo();
+# endif	/* defined(HASEPTOPTS) */
 #endif	/* defined(HASEPTOPTS) */
 
 		if (rc) {
