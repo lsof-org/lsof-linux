@@ -141,7 +141,7 @@ struct sctpsin {			/* SCTP socket information */
 struct tcp_udp {			/* IPv4 TCP and UDP socket
 					 * information */
 	INODETYPE inode;
-	unsigned long faddr, laddr;	/* foreign & local IPv6 addresses */
+	unsigned long faddr, laddr;	/* foreign & local IPv4 addresses */
 	int fport, lport;		/* foreign & local ports */
 	unsigned long txq, rxq;		/* transmit & receive queue values */
 	int proto;			/* 0 = TCP, 1 = UDP, 2 = UDPLITE */
