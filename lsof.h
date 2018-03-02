@@ -89,8 +89,8 @@ struct l_dev {
 #define	CHEND_PTY	4		/* pseudoterminal endpoint ID */
 #define	EPT_PIPE	1		/* process has pipe file */
 #define	EPT_PIPE_END	2		/* process has pipe end point file */
-#define	EPT_PTY		8		/* process has a pseudoterminal file */
-#define	EPT_PTY_END	16		/* process has a pseudoterminal end
+#define	EPT_PTY		16		/* process has a pseudoterminal file */
+#define	EPT_PTY_END	32		/* process has a pseudoterminal end
 					 * point file */
 
 #  if	defined(HASUXSOCKEPT)
