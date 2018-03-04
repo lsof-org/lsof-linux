@@ -4225,6 +4225,7 @@ process_proc_sock(p, pbr, s, ss, l, lss)
 		    (INODETYPE)s->st_ino);
 		tbuf[sizeof(tbuf) - 1] = '\0';
 		enter_dev_ch(tbuf);
+		Lf->inode = (INODETYPE)s->st_ino;
 	    }
 	    if (tp->faddr || tp->fport) {
 		fs.s_addr = tp->faddr;
