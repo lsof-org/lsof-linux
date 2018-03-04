@@ -516,6 +516,64 @@ check_tcpudp(i, p)
 	return((struct tcp_udp *)NULL);
 }
 
+/*
+ * check_inet() - check for locally used INET domain socket
+ */
+
+static struct tcp_udp *
+check_inet(i)
+	INODETYPE i;			/* socket file's inode number */
+{
+	int h;
+	struct tcp_udp *tp;
+
+	h = TCPUDPHASH(i);
+	for (tp = TcpUdp[h]; tp; tp = tp->next) {
+	    if (i == tp->inode)
+		return(tp);
+	}
+	return((struct tcp_udp *)NULL);
+}
+
+/*
+ * clear_netsinfo -- clear allocated INET socket info
+ */
+
+void
+clear_netsinfo()
+{
+	int h;				/* hash index */
+	struct tcp_udp *ti, *tp;	/* temporary pointers */
+
+#if	defined(HASEPTOPTS)
+	pxinfo_t *pp, *pnp;
+#endif	/* defined(HASEPTOPTS) */
+
+	if (TcpUdp) {
+	    for (h = 0; h < TcpUdp_bucks; h++) {
+		if ((ti = TcpUdp[h])) {
+		    do {
+			tp = ti->next;
+
+#if	defined(HASEPTOPTS)
+			for (pp = ti->pxinfo; pp; pp = pnp) {
+			    pnp = pp->next;
+			    (void) free((FREE_P *)pp);
+			}
+#endif	/* defined(HASEPTOPTS) */
+
+			(void) free((FREE_P *)ti);
+			ti = tp;
+		    } while (ti);
+		    TcpUdp[h] = (struct tcp_udp *)NULL;
+		}
+	    }
+	}
+	if (TcpUdpIPC) {
+	    for (h = 0; h < IPCBUCKS; h++)
+		TcpUdpIPC[h] = (struct tcp_udp *)NULL;
+	}
+}
 
 #if	defined(HASIPv6)
 /*
@@ -1236,6 +1294,20 @@ enter_netsinfo (tp)
 }
 
 /*
+ * find_netsepti(lf) -- find locally used INET socket endpoint info
+ */
+
+static struct tcp_udp *
+find_netsepti(lf)
+	struct lfile *lf;		/* socket's lfile */
+{
+	struct tcp_udp *tp;
+
+	tp = check_inet(lf->inode);
+	return(tp ? tp->ipc_peer: (struct tcp_udp *)NULL);
+}
+
+/*
  * get_netpeeri() - get INET socket peer inode information
  */
 
@@ -1260,6 +1332,110 @@ get_netpeeri()
 			break;
 		    }
 		}
+	    }
+	}
+}
+
+/*
+ * prt_nets() -- print locally used INET socket information
+ */
+
+static void
+prt_nets(p, mk)
+	struct tcp_udp *p;		/* peer info */
+	int mk;				/* 1 == mark for later processing */
+{
+	struct lproc *ep;		/* socket endpoint process */
+	struct lfile *ef;		/* socket endpoint file */
+	int i;				/* temporary index */
+	char nma[1024];			/* character buffer */
+	pxinfo_t *pp;			/* previous pipe info of socket */
+
+	if (p->pxinfo) {
+	    (void) strcpy(nma, "->");
+	    (void) add_nma(nma, strlen(nma));
+	}
+
+	for (pp = p->pxinfo; pp; pp = pp->next) {
+
+	/*
+	 * Add a linked socket's PID, command name and FD to the name column
+	 * addition.
+	 */
+	    ep = &Lproc[pp->lpx];
+	    ef = pp->lf;
+	    for (i = 0; i < (FDLEN - 1); i++) {
+		if (ef->fd[i] != ' ')
+		    break;
+	    }
+	    (void) snpf(nma, sizeof(nma) - 1, "%d,%.*s,%s%c",
+			ep->pid, CmdLim, ep->cmd, &ef->fd[i], ef->access);
+	    (void) add_nma(nma, strlen(nma));
+	    if (mk && FeptE == 2) {
+
+	    /*
+	     * Endpoint files have been selected, so mark this
+	     * one for selection later.
+	     */
+		ef->chend = CHEND_NETS;
+		ep->ept |= EPT_NETS_END;
+	    }
+	}
+}
+
+/*
+ * process_netsinfo() -- process locally used INET socket information, adding
+ *			it to selected INET socket files and selecting INET
+ *			socket end point files (if requested)
+ */
+
+void
+process_netsinfo(f)
+	int f;				/* function:
+					 *     0 == process selected socket
+					 *     1 == process socket end point
+					 */
+{
+	struct tcp_udp *p;		/* peer INET socket info pointer */
+	struct tcp_udp*tp;		/* temporary INET socket info pointer */
+
+	if (!FeptE)
+	    return;
+	for (Lf = Lp->file; Lf; Lf = Lf->next) {
+	    if (strcmp(Lf->type, "IPv4"))
+		continue;
+	    switch (f) {
+	    case 0:
+
+	    /*
+	     * Process already selected socket.
+	     */
+		if (is_file_sel(Lp, Lf)) {
+
+		/*
+		 * This file has been selected by some criterion other than its
+		 * being a socket.  Look up the socket's endpoints.
+		 */
+		    p = find_netsepti(Lf);
+		    if (p && p->inode)
+			prt_nets(p, 1);
+		}
+		break;
+	    case 1:
+		if (!is_file_sel(Lp, Lf) && (Lf->chend & CHEND_NETS)) {
+
+		/*
+		 * This is an unselected end point UNIX socket file.  Select it
+		 * and add its end point information to peer's name column
+		 * addition.
+		 */
+		    Lf->sf = Selflags;
+		    Lp->pss |= PS_SEC;
+		    p = find_netsepti(Lf);
+		    if (p && p->inode)
+			prt_nets(p, 0);
+		}
+		break;
 	    }
 	}
 }
