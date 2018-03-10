@@ -587,6 +587,10 @@ clear_uxsinfo()
 	    if ((ui = Uxsin[h])) {
 		do {
 		    up = ui->next;
+		    if (ui->path)
+			(void) free((FREE_P *)ui->path);
+		    if (ui->pcb)
+			(void) free((FREE_P *)ui->pcb);
 		    (void) free((FREE_P *)ui);
 		    ui = up;
 		} while (ui);
