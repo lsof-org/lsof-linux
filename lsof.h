@@ -31,7 +31,7 @@
 
 
 /*
- * $Id: lsof.h,v 1.69 2018/02/14 14:19:25 abe Exp $
+ * $Id: lsof.h,v 1.69 2018/02/14 14:19:25 abe Exp abe $
  */
 
 
@@ -85,18 +85,22 @@ struct l_dev {
  * End point definitions
  */
 
-#define	CHEND_PIPE	1		/* pipe endpoint ID */
-#define	CHEND_PTY	4		/* pseudoterminal endpoint ID */
-#define	EPT_PIPE	1		/* process has pipe file */
-#define	EPT_PIPE_END	2		/* process has pipe end point file */
-#define	EPT_PTY		16		/* process has a pseudoterminal file */
-#define	EPT_PTY_END	32		/* process has a pseudoterminal end
+#define	CHEND_PIPE	0x01		/* pipe endpoint ID */
+#define	CHEND_PTY	0x02		/* pseudoterminal endpoint ID */
+
+#  if	defined(HASUXSOCKEPT)
+#define	CHEND_UXS	0x04		/* UNIX socket endpoint ID */
+#  endif	/* defined(HASUXSOCKEPT) */
+
+#define	EPT_PIPE	0x01		/* process has pipe file */
+#define	EPT_PIPE_END	0x02		/* process has pipe end point file */
+#define	EPT_PTY		0x04		/* process has a pseudoterminal file */
+#define	EPT_PTY_END	0x08		/* process has a pseudoterminal end
 					 * point file */
 
 #  if	defined(HASUXSOCKEPT)
-#define	CHEND_UXS	2		/* UNIX socket endpoint ID */
-#define	EPT_UXS		4		/* process has a UNIX socket file */
-#define	EPT_UXS_END	8		/* process has a UNIX socket end point
+#define	EPT_UXS		0x10		/* process has a UNIX socket file */
+#define	EPT_UXS_END	0x20		/* process has a UNIX socket end point
 					 * file */
 #  endif	/* defined(HASUXSOCKEPT) */
 # endif	/* defined(HASEPTOPTS) */
