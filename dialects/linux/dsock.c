@@ -2395,6 +2395,8 @@ get_raw6(p)
 			(void) free((FREE_P *)rp->la);
 		    if (rp->ra)
 			(void) free((FREE_P *)rp->ra);
+		    if (rp->sp)
+			(void) free((FREE_P *)rp->sp);
 		    (void) free((FREE_P *)rp);
 		}
 		Rawsin6[h] = (struct rawsin *)NULL;
