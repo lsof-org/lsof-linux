@@ -1258,7 +1258,8 @@ process_id(idp, idpl, cmd, uid, pid, ppid, pgid, tid, tcmd)
 			enter_nm(rest);
 
 #if	defined(HASEPTOPTS) && defined(HASPTYEPT)
-		    else if (Lf->rdev_def
+		    else if (FeptE
+			 &&  Lf->rdev_def
 			 &&  is_pty_ptmx(Lf->rdev)
 			 &&  (av & FDINFO_TTY_INDEX)
 		    ) {

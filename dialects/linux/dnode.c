@@ -737,7 +737,8 @@ process_proc_node(p, pbr, s, ss, l, ls)
 		Lf->rdev_def = 1;
 
 #if	defined(HASEPTOPTS) && defined(HASPTYEPT)
-		if ((Ntype == N_CHR)
+		if (FeptE
+		&& (Ntype == N_CHR)
 		&&  is_pty_slave(GET_MAJ_DEV(Lf->rdev))
 		) {
 		    enter_ptmxi(GET_MIN_DEV(Lf->rdev));
