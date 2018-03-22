@@ -119,6 +119,7 @@
 		4.88, October 13, 2014
 		4.89, July 7, 2015
 		4.90, February 14, 2018
+		4.91, March ??? 2018
 
 
 Dialects Supported
@@ -4872,5 +4873,15 @@ Supplement	Regenerated the 4.04 distribution to correct a non-
 		Corrected Linux command extraction for commands that include
 		parentheses -- e.g., "(sd-pam)".
 		
+4.91		March ??? 2018
+
+		A bug has been reported in the PTY endpoint processing of
+		Linux lsof 4.90 by Peter Wu <peter@lekensteyn.nl>, making it
+		necessary for me to release another revision of lsof.
+
+		This revision applies two fixes that correct the Linux PTY
+		endpoint processing bug. Masatake YAMATO <yamato@redhat.com>
+		supplied the fixes.
+
 Vic Abell <abe@purdue.edu>
-February 14, 2018
+March ??? 2018

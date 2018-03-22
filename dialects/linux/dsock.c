@@ -32,7 +32,7 @@
 #ifndef lint
 static char copyright[] =
 "@(#) Copyright 1997 Purdue Research Foundation.\nAll rights reserved.\n";
-static char *rcsid = "$Id: dsock.c,v 1.42 2018/02/14 14:26:38 abe Exp $";
+static char *rcsid = "$Id: dsock.c,v 1.42 2018/02/14 14:26:38 abe Exp abe $";
 #endif
 
 
@@ -141,7 +141,7 @@ struct sctpsin {			/* SCTP socket information */
 struct tcp_udp {			/* IPv4 TCP and UDP socket
 					 * information */
 	INODETYPE inode;
-	unsigned long faddr, laddr;	/* foreign & local IPv6 addresses */
+	unsigned long faddr, laddr;	/* foreign & local IPv4 addresses */
 	int fport, lport;		/* foreign & local ports */
 	unsigned long txq, rxq;		/* transmit & receive queue values */
 	int proto;			/* 0 = TCP, 1 = UDP, 2 = UDPLITE */
@@ -153,7 +153,7 @@ struct tcp_udp {			/* IPv4 TCP and UDP socket
 struct tcp_udp6 {			/* IPv6 TCP and UDP socket
 					 * information */
 	INODETYPE inode;
-	struct in6_addr faddr, laddr;	/* foreign and local IPv6 addresses */
+	struct in6_addr faddr, laddr;	/* foreign & local IPv6 addresses */
 	int fport, lport;		/* foreign & local ports */
 	unsigned long txq, rxq;		/* transmit & receive queue values */
 	int proto;			/* 0 = TCP, 1 = UDP, 2 = UDPLITE */
@@ -587,6 +587,10 @@ clear_uxsinfo()
 	    if ((ui = Uxsin[h])) {
 		do {
 		    up = ui->next;
+		    if (ui->path)
+			(void) free((FREE_P *)ui->path);
+		    if (ui->pcb)
+			(void) free((FREE_P *)ui->pcb);
 		    (void) free((FREE_P *)ui);
 		    ui = up;
 		} while (ui);
@@ -2395,6 +2399,8 @@ get_raw6(p)
 			(void) free((FREE_P *)rp->la);
 		    if (rp->ra)
 			(void) free((FREE_P *)rp->ra);
+		    if (rp->sp)
+			(void) free((FREE_P *)rp->sp);
 		    (void) free((FREE_P *)rp);
 		}
 		Rawsin6[h] = (struct rawsin *)NULL;

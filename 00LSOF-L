@@ -63,13 +63,12 @@ mainly limiting it to announcements of new revisions, patches and
 security issues.  Postings don't appear until I've approved them.
 
 
-Send Bug Reports to Me Via E-Mail
-=================================
+Send Bug Reports to lsof-l, too
+===============================
 
-DON'T SEND BUG REPORTS TO lsof-l.  Send them directly to me via e-mail
-at <abe@purdue.edu>.  Make sure lsof appears in the "Subject:" line and
-make sure you first read the "Bug Reports" section of the 00README file
-of the lsof distribution.
+Since I am no longer actively supporting lsof -- 4.91 is probably the
+last revision I will distribute --  bug reports should be sent to
+lsof-l.  There are readers of lsof-l who may be able to help you.
 
 
 Unsubscribing
@@ -97,4 +96,4 @@ lsof-l-request or the web interface.
 
 
 Vic Abell <abe@purdue.edu>
-September 16, 2015
+March ??? 2018

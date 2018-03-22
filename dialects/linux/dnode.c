@@ -32,7 +32,7 @@
 #ifndef lint
 static char copyright[] =
 "@(#) Copyright 1997 Purdue Research Foundation.\nAll rights reserved.\n";
-static char *rcsid = "$Id: dnode.c,v 1.26 2018/02/14 14:26:38 abe Exp $";
+static char *rcsid = "$Id: dnode.c,v 1.26 2018/02/14 14:26:38 abe Exp abe $";
 #endif
 
 
@@ -737,7 +737,8 @@ process_proc_node(p, pbr, s, ss, l, ls)
 		Lf->rdev_def = 1;
 
 #if	defined(HASEPTOPTS) && defined(HASPTYEPT)
-		if ((Ntype == N_CHR)
+		if (FeptE
+		&&  (Ntype == N_CHR)
 		&&  is_pty_slave(GET_MAJ_DEV(Lf->rdev))
 		) {
 		    enter_ptmxi(GET_MIN_DEV(Lf->rdev));

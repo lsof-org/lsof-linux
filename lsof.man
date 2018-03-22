@@ -17,7 +17,7 @@ SYNOPSIS
      ] [ -z [z] ] [ -Z [Z] ] [ -- ] [names]
 
 DESCRIPTION
-     Lsof revision 4.90 lists on its standard output file  infor-
+     Lsof revision 4.91 lists on its standard output file  infor-
      mation  about  files  opened  by processes for the following
      UNIX dialects:
 
@@ -60,7 +60,7 @@ OPTIONS
 
 
 
-SunOS 5.9          Last change: Revision-4.90                   1
+SunOS 5.9          Last change: Revision-4.91                   1
 
 
 
@@ -126,7 +126,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.90                   2
+SunOS 5.9          Last change: Revision-4.91                   2
 
 
 
@@ -192,7 +192,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.90                   3
+SunOS 5.9          Last change: Revision-4.91                   3
 
 
 
@@ -258,7 +258,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.90                   4
+SunOS 5.9          Last change: Revision-4.91                   4
 
 
 
@@ -324,7 +324,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.90                   5
+SunOS 5.9          Last change: Revision-4.91                   5
 
 
 
@@ -390,7 +390,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.90                   6
+SunOS 5.9          Last change: Revision-4.91                   6
 
 
 
@@ -456,7 +456,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.90                   7
+SunOS 5.9          Last change: Revision-4.91                   7
 
 
 
@@ -522,7 +522,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.90                   8
+SunOS 5.9          Last change: Revision-4.91                   8
 
 
 
@@ -588,7 +588,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.90                   9
+SunOS 5.9          Last change: Revision-4.91                   9
 
 
 
@@ -654,7 +654,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.90                  10
+SunOS 5.9          Last change: Revision-4.91                  10
 
 
 
@@ -720,7 +720,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.90                  11
+SunOS 5.9          Last change: Revision-4.91                  11
 
 
 
@@ -786,7 +786,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.90                  12
+SunOS 5.9          Last change: Revision-4.91                  12
 
 
 
@@ -852,7 +852,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.90                  13
+SunOS 5.9          Last change: Revision-4.91                  13
 
 
 
@@ -918,7 +918,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.90                  14
+SunOS 5.9          Last change: Revision-4.91                  14
 
 
 
@@ -984,7 +984,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.90                  15
+SunOS 5.9          Last change: Revision-4.91                  15
 
 
 
@@ -1050,7 +1050,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.90                  16
+SunOS 5.9          Last change: Revision-4.91                  16
 
 
 
@@ -1116,7 +1116,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.90                  17
+SunOS 5.9          Last change: Revision-4.91                  17
 
 
 
@@ -1182,7 +1182,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.90                  18
+SunOS 5.9          Last change: Revision-4.91                  18
 
 
 
@@ -1248,7 +1248,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.90                  19
+SunOS 5.9          Last change: Revision-4.91                  19
 
 
 
@@ -1314,7 +1314,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.90                  20
+SunOS 5.9          Last change: Revision-4.91                  20
 
 
 
@@ -1380,7 +1380,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.90                  21
+SunOS 5.9          Last change: Revision-4.91                  21
 
 
 
@@ -1446,7 +1446,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.90                  22
+SunOS 5.9          Last change: Revision-4.91                  22
 
 
 
@@ -1512,7 +1512,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.90                  23
+SunOS 5.9          Last change: Revision-4.91                  23
 
 
 
@@ -1578,7 +1578,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.90                  24
+SunOS 5.9          Last change: Revision-4.91                  24
 
 
 
@@ -1644,7 +1644,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.90                  25
+SunOS 5.9          Last change: Revision-4.91                  25
 
 
 
@@ -1710,7 +1710,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.90                  26
+SunOS 5.9          Last change: Revision-4.91                  26
 
 
 
@@ -1776,7 +1776,7 @@ AFS
 
 
 
-SunOS 5.9          Last change: Revision-4.90                  27
+SunOS 5.9          Last change: Revision-4.91                  27
 
 
 
@@ -1842,7 +1842,7 @@ SECURITY
 
 
 
-SunOS 5.9          Last change: Revision-4.90                  28
+SunOS 5.9          Last change: Revision-4.91                  28
 
 
 
@@ -1908,7 +1908,7 @@ OUTPUT
 
 
 
-SunOS 5.9          Last change: Revision-4.90                  29
+SunOS 5.9          Last change: Revision-4.91                  29
 
 
 
@@ -1974,7 +1974,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.90                  30
+SunOS 5.9          Last change: Revision-4.91                  30
 
 
 
@@ -2040,7 +2040,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.90                  31
+SunOS 5.9          Last change: Revision-4.91                  31
 
 
 
@@ -2106,7 +2106,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.90                  32
+SunOS 5.9          Last change: Revision-4.91                  32
 
 
 
@@ -2172,7 +2172,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.90                  33
+SunOS 5.9          Last change: Revision-4.91                  33
 
 
 
@@ -2238,7 +2238,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.90                  34
+SunOS 5.9          Last change: Revision-4.91                  34
 
 
 
@@ -2304,7 +2304,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.90                  35
+SunOS 5.9          Last change: Revision-4.91                  35
 
 
 
@@ -2370,7 +2370,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.90                  36
+SunOS 5.9          Last change: Revision-4.91                  36
 
 
 
@@ -2436,7 +2436,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.90                  37
+SunOS 5.9          Last change: Revision-4.91                  37
 
 
 
@@ -2502,7 +2502,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.90                  38
+SunOS 5.9          Last change: Revision-4.91                  38
 
 
 
@@ -2568,7 +2568,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.90                  39
+SunOS 5.9          Last change: Revision-4.91                  39
 
 
 
@@ -2634,7 +2634,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.90                  40
+SunOS 5.9          Last change: Revision-4.91                  40
 
 
 
@@ -2700,7 +2700,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.90                  41
+SunOS 5.9          Last change: Revision-4.91                  41
 
 
 
@@ -2766,7 +2766,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.90                  42
+SunOS 5.9          Last change: Revision-4.91                  42
 
 
 
@@ -2832,7 +2832,7 @@ OUTPUT FOR OTHER PROGRAMS
 
 
 
-SunOS 5.9          Last change: Revision-4.90                  43
+SunOS 5.9          Last change: Revision-4.91                  43
 
 
 
@@ -2898,7 +2898,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.90                  44
+SunOS 5.9          Last change: Revision-4.91                  44
 
 
 
@@ -2964,7 +2964,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.90                  45
+SunOS 5.9          Last change: Revision-4.91                  45
 
 
 
@@ -3030,7 +3030,7 @@ BLOCKS AND TIMEOUTS
 
 
 
-SunOS 5.9          Last change: Revision-4.90                  46
+SunOS 5.9          Last change: Revision-4.91                  46
 
 
 
@@ -3096,7 +3096,7 @@ ALTERNATE DEVICE NUMBERS
 
 
 
-SunOS 5.9          Last change: Revision-4.90                  47
+SunOS 5.9          Last change: Revision-4.91                  47
 
 
 
@@ -3162,7 +3162,7 @@ KERNEL NAME CACHE
 
 
 
-SunOS 5.9          Last change: Revision-4.90                  48
+SunOS 5.9          Last change: Revision-4.91                  48
 
 
 
@@ -3228,7 +3228,7 @@ DEVICE CACHE FILE
 
 
 
-SunOS 5.9          Last change: Revision-4.90                  49
+SunOS 5.9          Last change: Revision-4.91                  49
 
 
 
@@ -3294,7 +3294,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.90                  50
+SunOS 5.9          Last change: Revision-4.91                  50
 
 
 
@@ -3360,7 +3360,7 @@ LSOF PERMISSIONS THAT AFFECT DEVICE CACHE FILE ACCESS
 
 
 
-SunOS 5.9          Last change: Revision-4.90                  51
+SunOS 5.9          Last change: Revision-4.91                  51
 
 
 
@@ -3426,7 +3426,7 @@ DEVICE CACHE PATH FROM AN ENVIRONMENT VARIABLE
 
 
 
-SunOS 5.9          Last change: Revision-4.90                  52
+SunOS 5.9          Last change: Revision-4.91                  52
 
 
 
@@ -3492,7 +3492,7 @@ PERSONAL DEVICE CACHE PATH (DEFAULT)
 
 
 
-SunOS 5.9          Last change: Revision-4.90                  53
+SunOS 5.9          Last change: Revision-4.91                  53
 
 
 
@@ -3558,7 +3558,7 @@ MODIFIED PERSONAL DEVICE CACHE PATH
 
 
 
-SunOS 5.9          Last change: Revision-4.90                  54
+SunOS 5.9          Last change: Revision-4.91                  54
 
 
 
@@ -3624,7 +3624,7 @@ EXAMPLES
 
 
 
-SunOS 5.9          Last change: Revision-4.90                  55
+SunOS 5.9          Last change: Revision-4.91                  55
 
 
 
@@ -3690,7 +3690,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.90                  56
+SunOS 5.9          Last change: Revision-4.91                  56
 
 
 
@@ -3756,7 +3756,7 @@ Maintenance Procedures                                    LSOF(8)
 
 
 
-SunOS 5.9          Last change: Revision-4.90                  57
+SunOS 5.9          Last change: Revision-4.91                  57
 
 
 
@@ -3822,7 +3822,7 @@ BUGS
 
 
 
-SunOS 5.9          Last change: Revision-4.90                  58
+SunOS 5.9          Last change: Revision-4.91                  58
 
 
 
@@ -3888,7 +3888,7 @@ FILES
 
 
 
-SunOS 5.9          Last change: Revision-4.90                  59
+SunOS 5.9          Last change: Revision-4.91                  59
 
 
 
@@ -3954,7 +3954,7 @@ SEE ALSO
 
 
 
-SunOS 5.9          Last change: Revision-4.90                  60
+SunOS 5.9          Last change: Revision-4.91                  60
 
 
 

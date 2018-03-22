@@ -34,7 +34,7 @@
 #ifndef lint
 static char copyright[] =
 "@(#) Copyright 1994 Purdue Research Foundation.\nAll rights reserved.\n";
-static char *rcsid = "$Id: main.c,v 1.58 2018/02/14 14:20:14 abe Exp $";
+static char *rcsid = "$Id: main.c,v 1.58 2018/02/14 14:20:14 abe Exp abe $";
 #endif
 
 
@@ -1444,9 +1444,9 @@ main(argc, argv)
 		(void) clear_uxsinfo();
 # endif	/* defined(HASUXSOCKEPT) */
 
-# if	defined(HASEPTOPTS)
+# if	defined(HASPTYEPT)
 		(void) clear_ptyinfo();
-# endif	/* defined(HASEPTOPTS) */
+# endif	/* defined(HASPTYEPT) */
 #endif	/* defined(HASEPTOPTS) */
 
 		if (rc) {
