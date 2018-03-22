@@ -7,3 +7,12 @@ tags
 Makefile
 *.patch
 *~
+LTbasic
+LTbigf
+LTdnlc
+LTlock
+LTnfs
+LTnlink
+LTsock
+LTszoff
+LTunix

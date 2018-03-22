@@ -32,7 +32,7 @@
 #ifndef lint
 static char copyright[] =
 "@(#) Copyright 1997 Purdue Research Foundation.\nAll rights reserved.\n";
-static char *rcsid = "$Id: dsock.c,v 1.42 2018/02/14 14:26:38 abe Exp $";
+static char *rcsid = "$Id: dsock.c,v 1.42 2018/02/14 14:26:38 abe Exp abe $";
 #endif
 
 
@@ -153,7 +153,7 @@ struct tcp_udp {			/* IPv4 TCP and UDP socket
 struct tcp_udp6 {			/* IPv6 TCP and UDP socket
 					 * information */
 	INODETYPE inode;
-	struct in6_addr faddr, laddr;	/* foreign and local IPv6 addresses */
+	struct in6_addr faddr, laddr;	/* foreign & local IPv6 addresses */
 	int fport, lport;		/* foreign & local ports */
 	unsigned long txq, rxq;		/* transmit & receive queue values */
 	int proto;			/* 0 = TCP, 1 = UDP, 2 = UDPLITE */
