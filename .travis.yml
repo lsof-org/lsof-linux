@@ -1,0 +1,23 @@
+#
+# Derived from
+# https://github.com/steveno/ctags/blob/master/.travis.yml
+#
+
+language: c
+
+os:
+  - linux
+
+compiler:
+  - gcc
+
+sudo: false
+
+addons:
+  apt:
+    packages:
+      - procps
+
+# Build and run tests. Only with gcc cross compile
+script:
+  - sh ./check-linux.sh

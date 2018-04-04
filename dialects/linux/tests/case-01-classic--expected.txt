@@ -1,0 +1,25 @@
+`cat config.cc`  -I. -I.. `cat config.cflags` -c LTlib.c \
+-o LTlib.o
+`cat config.cc`  -I. -I.. `cat config.cflags` LTbasic.c \
+LTlib.o `cat config.xobj` -o LTbasic
+`cat config.cc`  -I. -I.. `cat config.cflags` LTnlink.c \
+LTlib.o `cat config.xobj` -o LTnlink
+`cat config.cc`  -I. -I.. `cat config.cflags` LTsock.c \
+LTlib.o `cat config.xobj` -o LTsock `cat config.ldflags`
+`cat config.cc`  -I. -I.. `cat config.cflags` LTszoff.c \
+LTlib.o `cat config.xobj` -o LTszoff
+`cat config.cc`  -I. -I.. `cat config.cflags` LTunix.c \
+LTlib.o `cat config.xobj` -o LTunix `cat config.ldflags`
+
+Basic test:
+LTbasic ... OK
+
+Standard tests:
+LTnlink ... OK
+LTsock ... OK
+LTszoff ... OK
+LTunix ... OK
+All standard tests succeeded.
+
+Suggestion: try the optional tests: "make opt"
+
