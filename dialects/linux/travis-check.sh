@@ -37,6 +37,8 @@ echo STARTING TEST
 echo =============================================================================
 
 nfailed=0
+nsuccessful=0
+nskipped=0
 ncases=0
 REPORTS=
 
@@ -51,7 +53,12 @@ for x in dialects/linux/tests/case-*.sh; do
     ncases=$((ncases + 1))
     if [ "$s" = 0 ]; then
 	s=ok
+	nsuccessful=$(($nsuccessful + 1))
 	rm -f "$report"
+    elif [ "$s" = 2 ]; then
+	s=skipped
+	nskipped=$((nskipped + 1))
+	REPORTS="${REPORTS} ${report}"
     else
 	s=failed
 	nfailed=$((nfailed + 1))
@@ -59,7 +66,7 @@ for x in dialects/linux/tests/case-*.sh; do
     fi
     x=${x#case-}
     x=${x%.sh}
-    printf "%50s %5s\n"  $x $s
+    printf "%50s %-10s\n"  $x $s
 done
 
 report()
@@ -76,8 +83,21 @@ report()
 echo
 echo TEST SUMMARY
 echo =============================================================================
+printf "successful: %d\n" $nsuccessful
+printf "skipped: %d\n" $nskipped
+printf "failed: %d\n" $nfailed
+
 if [ $nfailed = 0 ]; then
     printf "All %d test cases are passed successfully\n" $ncases
+    if [ $nskipped = 0 ]; then
+	:
+    elif [ $nskipped = 1 ]; then
+	printf "but 1 case is skipped\n"
+	report $REPORTS
+    else
+	printf "but %d cases are skipped\n" $nskipped
+	report $REPORTS
+    fi
     exit 0
 elif [ $nfailed = 1 ]; then
     printf "%d of %d case is failed\n" $nfailed $ncases
