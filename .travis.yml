@@ -11,13 +11,14 @@ os:
 compiler:
   - gcc
 
-sudo: false
+sudo: true
 
 addons:
   apt:
     packages:
       - procps
+      - netcat
 
 # Build and run tests. Only with gcc cross compile
 script:
-  - sh ./check-linux.sh
+  - sudo sh ./check-linux.sh
