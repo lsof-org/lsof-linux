@@ -26,6 +26,8 @@
 make --version
 export TRAVIS=1
 
+tdir=dialects/linux/tests
+
 echo
 echo BUILDING LSOF
 echo =============================================================================
@@ -33,7 +35,7 @@ echo ===========================================================================
 make -j4
 
 echo
-echo STARTING TEST
+echo STARTING TEST '(' $tdir ')'
 echo =============================================================================
 
 nfailed=0
@@ -42,10 +44,13 @@ nskipped=0
 ncases=0
 REPORTS=
 
-for x in dialects/linux/tests/case-*.sh; do
+for x in $tdir/case-*.sh; do
     chmod a+x $x
     name=$(basename $x .sh)
     report=/tmp/$name-$$.report
+
+    printf "%s ... " $name
+
     set +e
     ./$x $(pwd)/lsof $report
     s=$?
@@ -64,9 +69,8 @@ for x in dialects/linux/tests/case-*.sh; do
 	nfailed=$((nfailed + 1))
 	REPORTS="${REPORTS} ${report}"
     fi
-    x=${x#case-}
-    x=${x%.sh}
-    printf "%50s %-10s\n"  $x $s
+
+    printf "%s\n" $s
 done
 
 report()
