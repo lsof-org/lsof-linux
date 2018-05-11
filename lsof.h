@@ -124,6 +124,7 @@ struct l_dev {
 #define	FF_BLKSEEK	"BSK"
 #define	FF_CIO		"CIO"
 #define	FF_CLONE	"CLON"
+#define	FF_CLOEXEC	"CLOX"
 #define	FF_CLREAD	"CLRD"
 #define	FF_COPYAVOID	"CA"
 #define	FF_CREAT	"CR"
