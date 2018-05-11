@@ -35,6 +35,11 @@ echo ===========================================================================
 make -j4
 
 echo
+echo BUILDING HELPERS
+echo =============================================================================
+make -C "${tdir}"
+
+echo
 echo STARTING TEST '(' $tdir ')'
 echo =============================================================================
 
@@ -52,7 +57,7 @@ for x in $tdir/case-*.sh; do
     printf "%s ... " $name
 
     set +e
-    ./$x $(pwd)/lsof $report
+    ./$x $(pwd)/lsof $report $tdir
     s=$?
     set -e
     ncases=$((ncases + 1))
