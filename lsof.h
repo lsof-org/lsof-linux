@@ -192,6 +192,7 @@ struct l_dev {
 #define	FF_SYNCRON	"SWR"
 #define	FF_TCP_MDEVONLY	"TCPM"
 #define	FF_TERMIO	"TIO"
+#define	FF_TMPFILE	"TMPF"
 #define	FF_TRUNC	"TR"
 #define	FF_VHANGUP	"VH"
 #define	FF_VTEXT	"VTXT"
