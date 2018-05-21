@@ -102,7 +102,7 @@ struct pff_tab Pff_tab[] = {
 #endif	/* defined(O_LARGEFILE) */
 
 #if	defined(O_CLOEXEC)
-	{ (long)O_CLOEXEC,	FF_CLOEXEC	},
+	{ (long)O_CLOEXEC,	POF_CLOEXEC	},
 #endif	/* defined(O_CLOEXEC) */
 
 #if	defined(O_PATH)
