@@ -9,7 +9,7 @@ shift 5
 TARGET=$tdir/open_with_flags
 if ! [ -x $TARGET ]; then
     echo "target execution ( $TARGET ) is not found" >> $report
-    exit 2
+    exit 1
 fi
 
 $TARGET $tfile "$@" &
