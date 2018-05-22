@@ -14,7 +14,7 @@ struct {
 	int flag;
 } table [] = {
 	{ "path", O_PATH },
-	{ "clox", O_CLOEXEC },
+	{ "cx",   O_CLOEXEC },
 	{ "tmpf", O_TMPFILE },
 	{ "rdwr", O_RDWR },
 };
