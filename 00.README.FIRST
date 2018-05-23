@@ -38,7 +38,7 @@ Now that you have the lsof distribution, I suggest:
 
 *  Lsof contributors may find their names in 00CREDITS.  (Thanks, again.)
 
-*  Read the lsof.man page file.  Its nroff source is in lsof.8.
+*  Read the lsof.man page file.  Its nroff source is in lsof.1.
 
 *  Consider subscribing to the lsof-l mailing list -- read 00LSOF-L
    for details.
