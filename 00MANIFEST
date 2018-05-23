@@ -20,7 +20,7 @@ Inventory*
 arg.c
 dialects/
 lib/
-lsof.8
+lsof.1
 lsof.h
 lsof.man
 lsof_fields.h
