@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/masatake/lsof-linux.svg?branch=devel)](https://travis-ci.org/masatake/lsof-linux)
+[![Build Status](https://travis-ci.org/lsof-org/lsof-linux.svg?branch=devel)](https://travis-ci.org/lsof-org/lsof-linux)
 
 # lsof-linux
 UNOFFICIAL repository of linux part of lsof.
