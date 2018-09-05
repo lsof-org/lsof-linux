@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/lsof-org/lsof-linux.svg?branch=devel)](https://travis-ci.org/lsof-org/lsof-linux)
+[![Coverage Status](https://coveralls.io/repos/github/lsof-org/lsof-linux/badge.svg?branch=devel)](https://coveralls.io/github/lsof-org/lsof-linux?branch=devel)
 
 # lsof-linux
 The official but temporary repository of linux part of lsof.

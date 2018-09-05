@@ -32,7 +32,7 @@ echo
 echo BUILDING LSOF
 echo =============================================================================
 ./Configure -n linux
-make -j4
+make -j4 CDEF=--coverage CC='gcc --coverage'
 
 echo
 echo BUILDING HELPERS
