@@ -32,8 +32,10 @@ cleanup()
     status=$1
     pid=$2
 
-    umount ${MQUEUE_MNTPOINT}
-    rmdir ${MQUEUE_MNTPOINT}
+    if [ -d ${MQUEUE_MNTPOINT} ]; then
+	umount ${MQUEUE_MNTPOINT}
+	rmdir ${MQUEUE_MNTPOINT}
+    fi
     kill $pid
     exit $status
 }
