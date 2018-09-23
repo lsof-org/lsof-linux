@@ -3,8 +3,15 @@
 #include <mqueue.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <signal.h>
 
 #define NAME "/xxx"
+
+static void
+do_nothing(int n)
+{
+  signal(SIGCONT, do_nothing);
+}
 
 int
 main(void)
@@ -18,6 +25,7 @@ main(void)
 
   printf("pid: %d / fd: %d\n", getpid(), t);
   fflush(stdout);
+  signal(SIGCONT, do_nothing);
   pause();
   return 0;
 }

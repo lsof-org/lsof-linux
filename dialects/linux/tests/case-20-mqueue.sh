@@ -40,8 +40,10 @@ cleanup()
     local pid=$2
 
     umount_mqueue
-    kill $pid
-
+    while kill -0 $pid 2> /dev/null; do
+	kill -CONT $pid
+	sleep 1
+    done
     exit $status
 }
 
