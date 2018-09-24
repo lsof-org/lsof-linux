@@ -36,8 +36,8 @@ umount_mqueue()
 
 cleanup()
 {
-    status=$1
-    pid=$2
+    local status=$1
+    local pid=$2
 
     umount_mqueue
     kill $pid
