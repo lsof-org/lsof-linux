@@ -26,17 +26,24 @@ else
     fi
 fi
 
-
-cleanup()
+umount_mqueue()
 {
-    status=$1
-    pid=$2
-
     if [ -d ${MQUEUE_MNTPOINT} ]; then
 	umount ${MQUEUE_MNTPOINT}
 	rmdir ${MQUEUE_MNTPOINT}
     fi
-    kill $pid
+}
+
+cleanup()
+{
+    local status=$1
+    local pid=$2
+
+    umount_mqueue
+    while kill -0 $pid 2> /dev/null; do
+	kill -CONT $pid
+	sleep 1
+    done
     exit $status
 }
 
@@ -55,6 +62,7 @@ $TARGET | {
 	fi
     else
 	echo "$TARGET prints an unexpected line: $label0 $pid $sep $label1 $fd" >> $report
+	umount_mqueue
 	case "$pid" in
 	    [0-9]*)
 		kill $pid
