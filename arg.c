@@ -761,7 +761,6 @@ enter_efsys(e, rdlnk)
 	else {
 	    if (!(path = Readlink(ec)))
 	        return(1);
-	    (void)free((FREE_P *)ec);
 	}
 /*
  * Remove terminating `/' characters from paths longer than one.
