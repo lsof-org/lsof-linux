@@ -68,7 +68,12 @@ static char *rcsid = "$Id: dsock.c,v 1.43 2018/03/26 21:52:29 abe Exp $";
 
 #define IPCBUCKS 128			/* IPC hash bucket count -- must be
 					 * a power of two */
+
+/* If a socket is used for IPC, we store both end points for the socket
+ * to the same hash backet. This makes seaching the counter part of
+ * an end point easier. See get_netpeeri(). */
 #define TCPUDP_IPC_HASH(tp) ((int)(((((tp)->faddr			\
+				      + (tp)->laddr,			\
 				      + (tp)->fport			\
 				      + (tp)->lport			\
 				      + (tp)->proto) * 31415) >> 3)	\
@@ -1324,8 +1329,10 @@ get_netpeeri()
 		for (np = TcpUdpIPC[h]; np; np = np->ipc_next) {
 		    if (np->ipc_peer)
 			continue;
-		    if (tp->laddr == np->laddr &&
+		    if (tp->faddr == np->laddr &&
+			tp->laddr == np->faddr &&
 			tp->fport == np->lport &&
+			tp->lport == np->fport &&
 			tp->proto == np->proto) {
 			tp->ipc_peer = np;
 			np->ipc_peer = tp;
@@ -2674,8 +2681,7 @@ get_tcpudp(p, pr, clr)
 	    tp->pxinfo = (pxinfo_t *)NULL;
 	    if (FeptE) {
 		tp->ipc_peer = (struct tcp_udp *)NULL;
-		if (tp->state == TCP_ESTABLISHED && tp->faddr == tp->laddr) {
-		    /* This is INET socket used for IPC in a host */
+		if (tp->state == TCP_ESTABLISHED) {
 		    int i = TCPUDP_IPC_HASH(tp);
 		    tp->ipc_next = TcpUdpIPC[i];
 		    TcpUdpIPC[i] = tp;
