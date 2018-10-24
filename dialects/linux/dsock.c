@@ -1314,7 +1314,7 @@ find_netsepti(lf)
 static void
 get_netpeeri()
 {
-	int h, i0, i1;
+	int h;
 	struct tcp_udp *np, *tp;
 
 	for (h = 0; h < IPCBUCKS; h++) {
