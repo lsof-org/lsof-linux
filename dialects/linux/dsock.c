@@ -1425,7 +1425,7 @@ process_netsinfo(f)
 		if (!is_file_sel(Lp, Lf) && (Lf->chend & CHEND_NETS)) {
 
 		/*
-		 * This is an unselected end point UNIX socket file.  Select it
+		 * This is an unselected end point INET socket file.  Select it
 		 * and add its end point information to peer's name column
 		 * addition.
 		 */
