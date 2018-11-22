@@ -126,9 +126,9 @@ _PROTOTYPE(extern pxinfo_t *find_ptyepti,(int pid, struct lfile *lf,int m,pxinfo
 _PROTOTYPE(extern int is_pty_slave,(int sm));
 _PROTOTYPE(extern int is_pty_ptmx,(dev_t dev));
 _PROTOTYPE(extern void process_ptyinfo,(int f));
+#  endif	/* defined(HASPTYEPT) */
 _PROTOTYPE(extern void clear_netsinfo,(void));
 _PROTOTYPE(extern void process_netsinfo,(int f));
-#  endif	/* defined(HASPTYEPT) */
 # endif	/* defined(HASEPTOPTS) */
 
 _PROTOTYPE(extern void free_lproc,(struct lproc *lp));
