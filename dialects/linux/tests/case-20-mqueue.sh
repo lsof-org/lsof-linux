@@ -9,7 +9,7 @@ MQUEUE_MNTPOINT=/tmp/$$
 
 TARGET=$tdir/mq-open
 if ! [ -x $TARGET ]; then
-    echo "target execution ( $TARGET ) is not found" >> $report
+    echo "target executable ( $TARGET ) is not found" >> $report
     exit 1
 fi
 
