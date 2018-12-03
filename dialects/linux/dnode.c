@@ -242,7 +242,6 @@ find_pepti(pid, lf, pp)
 	    }
 	}
 	return((pxinfo_t *)NULL);
-
 }
 
 #if	defined(HASPTYEPT)
