@@ -1,6 +1,7 @@
 HELPERS = \
 	mq-open \
 	pipe \
+	pty \
 	target-open-with-flags \
 	\
 	$(NULL)
@@ -19,4 +20,7 @@ mq-open: mq-open.o
 	$(CC) $(CFLAGS) -o $@ $< -lrt
 
 pipe: pipe.o
+	$(CC) $(CFLAGS) -o $@ $<
+
+pty: pty.o
 	$(CC) $(CFLAGS) -o $@ $<

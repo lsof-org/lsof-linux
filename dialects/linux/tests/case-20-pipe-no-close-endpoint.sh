@@ -46,7 +46,10 @@ fi
 	    $lsof +E -p "$parent" |
 		grep -q ".* $child .* ${fdw}w *FIFO .* pipe ${parent},p[-a-z]*,${fdr}r ${parent},p[-a-z]*,${fdw}w ${child},p[-a-z]*,${fdr}r"
 	} && {
+	    kill $child
 	    exit 0
 	}
     } >> $report
+    kill $child
+    exit 1
 }
