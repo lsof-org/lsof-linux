@@ -24,10 +24,5 @@ clean:
 mq-open: mq-open.o
 	$(CC) $(CFLAGS) -o $@ $< -lrt
 
-pipe: pipe.o
-	$(CC) $(CFLAGS) -o $@ $<
-
-pty: pty.o
-	$(CC) $(CFLAGS) -o $@ $<
 mq-fork: mq-fork.o
 	$(CC) $(CFLAGS) -o $@ $< -lrt
