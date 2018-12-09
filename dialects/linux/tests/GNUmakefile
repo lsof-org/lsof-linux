@@ -1,4 +1,5 @@
 HELPERS = \
+	mq-fork \
 	mq-open \
 	pipe \
 	pty \
@@ -24,3 +25,5 @@ pipe: pipe.o
 
 pty: pty.o
 	$(CC) $(CFLAGS) -o $@ $<
+mq-fork: mq-fork.o
+	$(CC) $(CFLAGS) -o $@ $< -lrt
