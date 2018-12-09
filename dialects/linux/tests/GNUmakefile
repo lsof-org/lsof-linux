@@ -9,7 +9,11 @@ HELPERS = \
 
 CFLAGS  = -g -Wall -std=c99
 
+.PHONY: clean all
+
 all: $(HELPERS)
+clean:
+	rm -f $(HELPERS) *.o
 
 # See
 # https://stackoverflow.com/questions/19964206/weird-posix-message-queue-linking-issue-sometimes-it-doesnt-link-correctly
