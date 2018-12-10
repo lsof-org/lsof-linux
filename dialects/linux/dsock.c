@@ -1358,11 +1358,6 @@ prt_nets(p, mk)
 	char nma[1024];			/* character buffer */
 	pxinfo_t *pp;			/* previous pipe info of socket */
 
-	if (p->pxinfo) {
-	    (void) strcpy(nma, "->");
-	    (void) add_nma(nma, strlen(nma));
-	}
-
 	for (pp = p->pxinfo; pp; pp = pp->next) {
 
 	/*
