@@ -4,11 +4,6 @@ name=$(basename $0 .sh)
 lsof=$1
 report=$2
 
-if ! [ $(id -u) = 0 ]; then
-    echo "root privileged is needed to run $(basename $0. sh)" >> $report
-    exit 2
-fi
-
 nc -l -4 127.0.0.1 10000 > /dev/null < /dev/zero &
 server=$!
 sleep 1
