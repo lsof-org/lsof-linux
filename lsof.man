@@ -1228,7 +1228,7 @@ Maintenance Procedures                                    LSOF(8)
               states except Idle, use:
 
 
-                   -iUDP -sUDP:Idle
+                   -iUDP -sUDP:^Idle
 
               State names vary with UNIX dialects,  so  it's  not
               possible  to  provide a complete list.  Some common
