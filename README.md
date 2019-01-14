@@ -23,7 +23,7 @@ command for extracting the latest changes in the the source tree
 released from the upstream project.
 
 "check-linux.sh" script in the "devel" branch is for testing lsof on
-trais-ci.
+travis-ci.
 
 We will start lsof5 repository that deals multiple dialects at
 least linux and freebsd. The result of development at this
