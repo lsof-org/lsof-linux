@@ -1404,7 +1404,13 @@ process_netsinfo(f)
 	if (!FeptE)
 	    return;
 	for (Lf = Lp->file; Lf; Lf = Lf->next) {
-	    if (strcmp(Lf->type, "IPv4"))
+	    if (strcmp(Lf->type,
+#if	defined(HASIPv6)
+		       "IPv4"
+#else	/* !defined(HASIPv6) */
+		       "inet"
+#endif	/* defined(HASIPv6) */
+		      ))
 		continue;
 	    switch (f) {
 	    case 0:
