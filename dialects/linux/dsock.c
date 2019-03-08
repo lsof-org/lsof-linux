@@ -2696,7 +2696,7 @@ get_tcpudp(p, pr, clr)
  */
 	if (FeptE)
 	    get_netpeeri();
-#endif	/* defined(HASEPTOPTS) && defined(HASUXSOCKEPT) */
+#endif	/* defined(HASEPTOPTS) */
 
 	(void) fclose(fs);
 }
