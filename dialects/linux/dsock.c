@@ -1441,8 +1441,7 @@ process_netsinfo(f)
 	    }
 	}
 }
-#endif						\
-    /* defined(HASEPTOPTS) */
+#endif  /* defined(HASEPTOPTS) */
 
 /*
  * get_icmp() - get ICMP net info
