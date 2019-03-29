@@ -97,7 +97,7 @@ static pxinfo_t **Pinfo = (pxinfo_t **)NULL;	/* pipe endpoint hash buckets */
 static pxinfo_t **PtyInfo = (pxinfo_t **)NULL;	/* pseudoterminal endpoint hash
 						 * buckets */
 # endif	/* defined(HASPTYEPT) */
-static pxinfo_t **PSXMQinfo = (pxinfo_t **)NULL;/* pipe endpoint hash buckets */
+static pxinfo_t **PSXMQinfo = (pxinfo_t **)NULL;/* posix msg queue endpoint hash buckets */
 #endif	/* defined(HASEPTOPTS) */
 
 
