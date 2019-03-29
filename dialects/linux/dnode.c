@@ -316,7 +316,7 @@ enter_ptmxi(mn)
 		    Exit(1);
 	    }
 	}
-	endpoint_enter(PtyInfo, "pty ", mn);
+	endpoint_enter(PtyInfo, "pty", mn);
 }
 
 /*
