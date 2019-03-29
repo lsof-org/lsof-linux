@@ -12,7 +12,7 @@ uname -r | sed -ne 's/^\([0-9]\+\)\.\([0-9]\+\)\.\([0-9]\+\).*/\1 \2/p' | {
 	echo "pty endpoint features doesn't work on Linux $major"
 	exit 2
     fi
-    if [ "$minor" -lt 13 ]; then
+    if [ "$major" -eq 4 -a "$minor" -lt 13 ]; then
 	echo "pty endpoint features doesn't work on Linux $major.$minor"
 	exit 2
     fi
