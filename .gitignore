@@ -4,6 +4,8 @@ tests/config.*
 *.a
 TAGS
 tags
+*.gcda
+*.gcno
 Makefile
 *.patch
 *~
@@ -25,4 +27,9 @@ LTunix
 /dsock.c
 /dstore.c
 /machine.h
-/version.h
+version.h
+dialects/linux/tests/mq-fork
+dialects/linux/tests/mq-open
+dialects/linux/tests/pipe
+dialects/linux/tests/pty
+dialects/linux/tests/target-open-with-flags
