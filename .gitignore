@@ -4,6 +4,8 @@ tests/config.*
 *.a
 TAGS
 tags
+*.gcda
+*.gcno
 Makefile
 *.patch
 *~
@@ -16,3 +18,18 @@ LTnlink
 LTsock
 LTszoff
 LTunix
+/dfile.c
+/dlsof.h
+/dmnt.c
+/dnode.c
+/dproc.c
+/dproto.h
+/dsock.c
+/dstore.c
+/machine.h
+version.h
+dialects/linux/tests/mq-fork
+dialects/linux/tests/mq-open
+dialects/linux/tests/pipe
+dialects/linux/tests/pty
+dialects/linux/tests/target-open-with-flags
